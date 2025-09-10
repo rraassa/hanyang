@@ -1,70 +1,125 @@
-# Getting Started with Create React App
+# 🚕 남바원 택시 클론
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+남바원 택시 서비스를 클론한 React 웹 애플리케이션입니다.
 
-## Available Scripts
+## 🚀 기술 스택
 
-In the project directory, you can run:
+- **Frontend**: React 19.1.0, React Router DOM 7.6.3
+- **Styling**: Tailwind CSS 3.4.17
+- **Build Tool**: Create React App
+- **Container**: Docker, Docker Compose
+- **Web Server**: Nginx (Production)
 
-### `npm start`
+## 📁 프로젝트 구조
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+```
+nambaone-taxi-clone/
+├── src/
+│   ├── components/          # 재사용 가능한 컴포넌트들
+│   │   ├── Header.jsx
+│   │   ├── Footer.jsx
+│   │   ├── MainVisual.jsx
+│   │   ├── MainCards.jsx
+│   │   ├── ReviewSection.jsx
+│   │   ├── ListingTable.jsx
+│   │   └── InquirySection.jsx
+│   ├── pages/              # 페이지 컴포넌트들
+│   │   ├── LoginPage.jsx
+│   │   ├── SignupPage.jsx
+│   │   └── TransferorView.jsx
+│   ├── App.js              # 메인 앱 컴포넌트
+│   └── index.js            # 앱 진입점
+├── public/                 # 정적 파일들
+│   └── img/               # 이미지 리소스
+├── Dockerfile             # Docker 이미지 빌드 설정
+├── nginx.conf             # Nginx 웹서버 설정
+├── .dockerignore          # Docker 빌드 제외 파일
+└── package.json           # 프로젝트 의존성
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🛠️ 설치 및 실행
 
-### `npm test`
+### 로컬 개발 환경
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```bash
+# 의존성 설치
+npm install
 
-### `npm run build`
+# 개발 서버 실행
+npm start
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+# 브라우저에서 http://localhost:3000 접속
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Docker로 실행
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+# 프로젝트 루트에서 실행
+docker-compose up -d
 
-### `npm run eject`
+# 브라우저에서 http://localhost:3000 접속
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## 🎨 주요 기능
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- **반응형 디자인**: 모바일, 태블릿, 데스크톱 지원
+- **SPA 라우팅**: React Router를 사용한 페이지 네비게이션
+- **인증 시스템**: 로그인/회원가입 페이지 (UI 완성)
+- **모던 UI**: Tailwind CSS를 활용한 깔끔한 디자인
+- **스크롤 애니메이션**: Intersection Observer를 사용한 헤더 상태 변화
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## 🔧 개발 환경 설정
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### 필수 요구사항
+- Node.js 18+
+- npm 또는 yarn
+- Docker & Docker Compose (선택사항)
 
-## Learn More
+### 환경 변수
+현재는 환경 변수가 필요하지 않습니다. 나중에 AWS Cognito 연동 시 환경 변수가 추가될 예정입니다.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## 🚀 배포
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Docker를 사용한 배포
+```bash
+# 프로덕션 빌드
+docker-compose -f docker-compose.prod.yml up -d
+```
 
-### Code Splitting
+### 정적 파일 배포
+```bash
+# 빌드
+npm run build
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+# build 폴더를 웹서버에 배포
+```
 
-### Analyzing the Bundle Size
+## 📋 향후 계획
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+- [ ] **백엔드 API 개발** (Node.js/Express 또는 Python/Django)
+- [ ] **AWS Cognito 인증 시스템** 연동
+- [ ] **데이터베이스** 연동 (PostgreSQL/MongoDB)
+- [ ] **실시간 위치 추적** 기능
+- [ ] **결제 시스템** 연동
+- [ ] **도메인 연결** 및 SSL 인증서
+- [ ] **CI/CD 파이프라인** 구축
 
-### Making a Progressive Web App
+## 🤝 기여하기
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-### Advanced Configuration
+## 📄 라이선스
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+이 프로젝트는 MIT 라이선스 하에 배포됩니다. 자세한 내용은 `LICENSE` 파일을 참조하세요.
 
-### Deployment
+## 📞 연락처
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+프로젝트 링크: [https://github.com/rraassa/hanyang](https://github.com/rraassa/hanyang)
 
-### `npm run build` fails to minify
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+**참고**: 이 프로젝트는 학습 목적으로 제작된 클론 프로젝트입니다.
