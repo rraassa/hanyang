@@ -39,6 +39,19 @@ nambaone-taxi-clone/
 
 ## 🛠️ 설치 및 실행
 
+### 🚀 빠른 시작 (Docker 권장)
+
+```bash
+# 1. 프로젝트 클론
+git clone https://github.com/rraassa/hanyang.git
+cd hanyang
+
+# 2. Docker로 바로 실행
+docker-compose up -d
+
+# 3. 브라우저에서 http://localhost:3000 접속
+```
+
 ### 로컬 개발 환경
 
 ```bash
@@ -51,13 +64,20 @@ npm start
 # 브라우저에서 http://localhost:3000 접속
 ```
 
-### Docker로 실행
+### Docker 명령어
 
 ```bash
-# 프로젝트 루트에서 실행
+# 컨테이너 시작
 docker-compose up -d
 
-# 브라우저에서 http://localhost:3000 접속
+# 컨테이너 중지
+docker-compose down
+
+# 로그 확인
+docker-compose logs -f frontend
+
+# 컨테이너 재빌드
+docker-compose build --no-cache
 ```
 
 ## 🎨 주요 기능

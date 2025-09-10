@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  # 프론트엔드 서비스
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nambaone-frontend
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    networks:
+      - nambaone-network
+
+  # 백엔드 서비스 (나중에 추가 예정)
+  # backend:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   container_name: nambaone-backend
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     - NODE_ENV=production
+  #     - DATABASE_URL=postgresql://user:password@db:5432/nambaone
+  #   depends_on:
+  #     - db
+  #   restart: unless-stopped
+  #   networks:
+  #     - nambaone-network
+
+  # 데이터베이스 서비스 (나중에 추가 예정)
+  # db:
+  #   image: postgres:15-alpine
+  #   container_name: nambaone-db
+  #   environment:
+  #     - POSTGRES_DB=nambaone
+  #     - POSTGRES_USER=user
+  #     - POSTGRES_PASSWORD=password
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
+  #   restart: unless-stopped
+  #   networks:
+  #     - nambaone-network
+
+  # Redis 서비스 (나중에 추가 예정)
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: nambaone-redis
+  #   ports:
+  #     - "6379:6379"
+  #   restart: unless-stopped
+  #   networks:
+  #     - nambaone-network
+
+# 네트워크 설정
+networks:
+  nambaone-network:
+    driver: bridge
+
+# 볼륨 설정 (나중에 사용)
+# volumes:
+#   postgres_data:
