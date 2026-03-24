@@ -18,9 +18,11 @@ export default function LoginPage() {
 
     try {
       const tokens = await signIn(email, password);
+      const fallbackName = email.split("@")[0] || "User";
       localStorage.setItem("accessToken", tokens.accessToken);
       localStorage.setItem("idToken", tokens.idToken);
       localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("displayName", localStorage.getItem("nickname") || fallbackName);
       alert("로그인 성공!");
       navigate("/");
       setTimeout(() => window.location.reload(), 10);

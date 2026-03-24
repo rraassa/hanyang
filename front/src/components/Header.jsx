@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function Header({ colorType, onNavigate }) {
@@ -7,9 +7,23 @@ export default function Header({ colorType, onNavigate }) {
   const [lensVisible, setLensVisible] = useState(false);
   const [lensText, setLensText] = useState("");
   const [lensPos, setLensPos] = useState({ x: 0, y: 0 });
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [displayName, setDisplayName] = useState("");
+  const profileMenuRef = useRef(null);
 
   useEffect(() => {
     setIsLoggedIn(localStorage.getItem("isLoggedIn") === "true");
+    setDisplayName(localStorage.getItem("displayName") || localStorage.getItem("nickname") || "");
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const bgColor =
@@ -61,20 +75,45 @@ export default function Header({ colorType, onNavigate }) {
         {/* 로그인/로그아웃 영역 */}
         <div className={`ml-auto flex space-x-2 text-xs font-normal whitespace-nowrap md:text-sm ${textColor}`}>
           {isLoggedIn ? (
-            <>
-              <span onClick={() => navigate("/mypage")} className="cursor-pointer hover:underline">마이페이지</span>
-              <span>|</span>
-              <span
-                onClick={() => {
-                  localStorage.removeItem("isLoggedIn");
-                  navigate("/");
-                  setTimeout(() => window.location.reload(), 10);
-                }}
-                className="cursor-pointer hover:underline"
+            <div className="relative" ref={profileMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsProfileMenuOpen((prev) => !prev)}
+                className="flex h-11 w-11 items-center justify-center rounded-full border-[4px] border-black bg-[#17368F] text-2xl font-extrabold text-white md:h-12 md:w-12 md:text-3xl"
+                aria-label="프로필 메뉴 열기"
               >
-                로그아웃
-              </span>
-            </>
+                {(displayName || "L").charAt(0).toUpperCase()}
+              </button>
+
+              {isProfileMenuOpen && (
+                <div className="absolute right-0 mt-2 w-28 overflow-hidden rounded-xl border border-gray-200 bg-white text-black shadow-[0_8px_18px_rgba(0,0,0,0.2)]">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onNavigate?.("review");
+                      setIsProfileMenuOpen(false);
+                    }}
+                    className="w-full px-3 py-2 text-lg font-bold hover:bg-gray-50"
+                  >
+                    나의 후기
+                  </button>
+                  <div className="h-px bg-gray-200" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      localStorage.removeItem("isLoggedIn");
+                      localStorage.removeItem("displayName");
+                      localStorage.removeItem("nickname");
+                      navigate("/");
+                      setTimeout(() => window.location.reload(), 10);
+                    }}
+                    className="w-full px-3 py-2 text-lg font-bold hover:bg-gray-50"
+                  >
+                    로그아웃
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <>
               <span onClick={() => navigate("/login")} className="cursor-pointer hover:underline">로그인</span>
