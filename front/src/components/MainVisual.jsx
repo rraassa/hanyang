@@ -7,7 +7,7 @@ export default function MainHeroSection() {
           <div>
             <p className="text-sm text-gray-600 mb-2">#차량양도 #판매 #차량등록 #구매</p>
             <h2
-              className="text-xl md:text-3xl font-bold text-gray-800 leading-snug md:leading-loose"
+              className="text-xl md:text-3xl font-bold text-gray-800 leading-snug md:leading-snug"
             >
               차량 판매도, 구매도 고민이라면? <br />
               믿고 맡길 수 있는 <span className="text-[#0E2A7B]">한양상사</span>가 함께합니다.

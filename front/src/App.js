@@ -184,6 +184,7 @@ function AppContent() {
           path="/"
           element={
             <>
+              {!viewMode && <div className="h-28 md:h-0" />}
               {!viewMode && <MainVisual />}
               <div className="w-full transition-all duration-700 ease-in-out">
                 {viewMode ? (

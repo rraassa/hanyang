@@ -14,7 +14,7 @@ export default function PriceView() {
             <p className="text-center text-2xl font-extrabold leading-tight text-black md:-ml-36 md:text-[32px]">
               {formattedDate} 현재 시세는
             </p>
-            <p className="mt-5 text-center text-2xl font-extrabold leading-tight md:ml-36 md:text-[32px]">
+            <p className="mt-2 text-center text-2xl font-extrabold leading-tight md:ml-36 md:text-[32px]">
               <span className="text-red-600">1억1천6백만원</span>
               <span className="text-black"> 입니다.</span>
             </p>
