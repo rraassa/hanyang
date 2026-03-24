@@ -8,49 +8,93 @@ import { signUp, confirmSignUp } from '../lib/cognito';
 
 export default function SignupPage() {
   const navigate = useNavigate();
-  const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [name, setName] = useState('');
+  const [nickname, setNickname] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [sendingCode, setSendingCode] = useState(false);
+  const [verifyingCode, setVerifyingCode] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [codeSent, setCodeSent] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [signupRequested, setSignupRequested] = useState(false);
 
-  const handleSignup = async (e) => {
-    e.preventDefault();
-
+  const validateBeforeSendCode = () => {
+    if (!nickname.trim() || !email.trim() || !password || !confirmPassword) {
+      alert('닉네임, 이메일, 비밀번호, 비밀번호 확인을 먼저 입력해주세요.');
+      return false;
+    }
     if (password !== confirmPassword) {
       alert('비밀번호가 일치하지 않습니다.');
-      return;
+      return false;
     }
+    return true;
+  };
 
-    setLoading(true);
+  const handleSendCode = async () => {
+    if (emailVerified) return;
+    if (!validateBeforeSendCode()) return;
+
+    setSendingCode(true);
     try {
-      await signUp(email, password, name);
-      alert('회원가입 성공! 이메일로 전송된 인증 코드를 입력해주세요.');
-      setStep(2);
+      await signUp(email, password, nickname);
+      setCodeSent(true);
+      setSignupRequested(true);
+      alert('이메일로 인증 코드가 전송되었습니다. 인증번호를 입력해주세요.');
     } catch (err) {
       console.error('회원가입 오류:', err);
-      alert(err.message || '회원가입 실패!');
+      if (String(err?.message).includes('UsernameExistsException')) {
+        setCodeSent(true);
+        setSignupRequested(true);
+        alert('이미 가입 요청된 이메일입니다. 받은 인증 코드를 입력해주세요.');
+      } else {
+        alert(err.message || '인증 코드 전송 실패!');
+      }
     } finally {
-      setLoading(false);
+      setSendingCode(false);
     }
   };
 
   const handleVerification = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    if (!verificationCode.trim()) {
+      alert('인증 코드를 입력해주세요.');
+      return;
+    }
+
+    setVerifyingCode(true);
 
     try {
       await confirmSignUp(email, verificationCode);
-      alert('이메일 인증 완료! 로그인해주세요.');
-      navigate('/login');
+      setEmailVerified(true);
+      setCodeSent(false);
+      setVerificationCode('');
+      alert('이메일 인증이 완료되었습니다.');
     } catch (err) {
       console.error('인증 오류:', err);
-      alert(err.message || '인증 실패!');
+      alert('인증번호가 올바르지 않습니다. 다시 확인해주세요.');
     } finally {
-      setLoading(false);
+      setVerifyingCode(false);
     }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!signupRequested) {
+      alert('먼저 인증 코드를 요청해주세요.');
+      return;
+    }
+    if (!emailVerified) {
+      alert('이메일 인증을 완료해주세요.');
+      return;
+    }
+
+    setSubmitting(true);
+    setTimeout(() => {
+      alert('회원가입이 완료되었습니다. 로그인해주세요.');
+      navigate('/login');
+    }, 200);
   };
 
   return (
@@ -66,89 +110,102 @@ export default function SignupPage() {
                 <span className="text-lg font-black leading-none">&lt;</span>
                 <span className="text-xs relative top-[1px]">메인페이지로</span>
               </button>
-              <CardTitle className="text-xl">
-                {step === 1 ? '회원가입' : '이메일 인증'}
-              </CardTitle>
-              <CardDescription>
-                {step === 1 ? '최고의 서비스로 보답드리겠습니다' : '이메일로 전송된 인증 코드를 입력하세요'}
-              </CardDescription>
+              <CardTitle className="text-xl">회원가입</CardTitle>
+              <CardDescription>이메일 인증 후 가입을 완료해주세요</CardDescription>
             </CardHeader>
 
             <CardContent>
-              {step === 1 ? (
-                <form className="space-y-4" onSubmit={handleSignup}>
-                  <div className="space-y-2">
-                    <Label htmlFor="name">이름</Label>
-                    <Input
-                      id="name"
-                      type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="이름을 입력하세요"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">이메일</Label>
+              <form className="space-y-4" onSubmit={handleSubmit}>
+                <div className="space-y-2">
+                  <Label htmlFor="nickname">닉네임</Label>
+                  <Input
+                    id="nickname"
+                    type="text"
+                    value={nickname}
+                    onChange={(e) => setNickname(e.target.value)}
+                    placeholder="닉네임을 입력하세요"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">이메일</Label>
+                  <div className="flex gap-2">
                     <Input
                       id="email"
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="이메일을 입력하세요"
+                      disabled={emailVerified}
                       required
                     />
+                    <Button
+                      type="button"
+                      onClick={handleSendCode}
+                      disabled={sendingCode || emailVerified}
+                      className="shrink-0"
+                    >
+                      {emailVerified ? '인증완료' : sendingCode ? '전송 중...' : '인증요청'}
+                    </Button>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password">비밀번호</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="비밀번호를 입력하세요 (최소 8자, 대소문자, 숫자 포함)"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">비밀번호 확인</Label>
-                    <Input
-                      id="confirmPassword"
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="비밀번호를 다시 입력하세요"
-                      required
-                    />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? '가입 중...' : '회원가입'}
-                  </Button>
-                  <div className="text-center text-xs mt-2 text-muted-foreground">
-                    이미 계정이 있으신가요?{' '}
-                    <Link to="/login" className="hover:underline text-primary">
-                      로그인
-                    </Link>
-                  </div>
-                </form>
-              ) : (
-                <form className="space-y-4" onSubmit={handleVerification}>
-                  <div className="space-y-2">
+                </div>
+
+                {codeSent && !emailVerified && (
+                  <div className="space-y-2 rounded-md border bg-muted/30 p-3">
                     <Label htmlFor="code">인증 코드</Label>
-                    <Input
-                      id="code"
-                      type="text"
-                      value={verificationCode}
-                      onChange={(e) => setVerificationCode(e.target.value)}
-                      placeholder="6자리 인증 코드"
-                      required
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        id="code"
+                        type="text"
+                        value={verificationCode}
+                        onChange={(e) => setVerificationCode(e.target.value)}
+                        placeholder="6자리 인증 코드"
+                        required
+                      />
+                      <Button
+                        type="button"
+                        onClick={handleVerification}
+                        disabled={verifyingCode}
+                        className="shrink-0"
+                      >
+                        {verifyingCode ? '확인 중...' : '확인'}
+                      </Button>
+                    </div>
                   </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? '인증 중...' : '인증 완료'}
-                  </Button>
-                </form>
-              )}
+                )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">비밀번호</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="비밀번호를 입력하세요 (최소 8자, 대소문자, 숫자 포함)"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">비밀번호 확인</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="비밀번호를 다시 입력하세요"
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={submitting}>
+                  {submitting ? '처리 중...' : '회원가입 완료'}
+                </Button>
+                <div className="text-center text-xs mt-2 text-muted-foreground">
+                  이미 계정이 있으신가요?{' '}
+                  <Link to="/login" className="hover:underline text-primary">
+                    로그인
+                  </Link>
+                </div>
+              </form>
             </CardContent>
           </div>
 
