@@ -4,11 +4,19 @@ FROM node:18-alpine as build
 # 작업 디렉토리 설정
 WORKDIR /app
 
+# 환경변수 설정
+ARG REACT_APP_AWS_REGION=ap-northeast-2
+ARG REACT_APP_USER_POOL_ID=ap-northeast-2_3KZ5195Hb
+ARG REACT_APP_USER_POOL_CLIENT_ID=1hvpamheshqu2mrsstb95oftto
+ENV REACT_APP_AWS_REGION=$REACT_APP_AWS_REGION
+ENV REACT_APP_USER_POOL_ID=$REACT_APP_USER_POOL_ID
+ENV REACT_APP_USER_POOL_CLIENT_ID=$REACT_APP_USER_POOL_CLIENT_ID
+
 # package.json과 package-lock.json 복사
 COPY package*.json ./
 
 # 의존성 설치
-RUN npm ci --only=production
+RUN npm ci
 
 # 소스 코드 복사
 COPY . .
