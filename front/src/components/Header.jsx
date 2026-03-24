@@ -21,23 +21,23 @@ export default function Header({ colorType, onNavigate }) {
   const menuItems = [
     { label: "양도자", mode: "transferor" },
     { label: "양수자", mode: "acceptor" },
-    { label: "시세표", mode: "price" },
+    { label: "개인택시 시세", mode: "price" },
     { label: "문의하기", mode: "inquiry" },
     { label: "거래후기", mode: "review" },
   ];
 
   return (
     <header className={`fixed top-0 w-full z-50 ${bgColor} shadow-md transition-colors duration-300`}>
-      <div className="flex items-center justify-between px-10 py-5">
-        <div className="flex items-center gap-10">
+      <div className="flex flex-col gap-3 px-4 py-3 md:flex-row md:items-center md:justify-between md:px-10 md:py-5">
+        <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row md:items-center md:gap-10">
           <div 
-            className={`text-2xl font-bold ${textColor} cursor-pointer hover:opacity-80 transition-opacity duration-200`}
+            className={`text-xl md:text-2xl font-bold ${textColor} cursor-pointer hover:opacity-80 transition-opacity duration-200`}
             onClick={() => onNavigate("home")}
           >
             한양상사
           </div>
 
-          <nav className="flex space-x-8 text-[15px] font-semibold">
+          <nav className="scrollbar-hide flex gap-4 overflow-x-auto whitespace-nowrap text-xs font-semibold md:space-x-8 md:gap-0 md:text-[15px]">
             {menuItems.map(({ label, mode }, idx) => (
               <span
                 key={idx}
@@ -59,7 +59,7 @@ export default function Header({ colorType, onNavigate }) {
         </div>
 
         {/* 로그인/로그아웃 영역 */}
-        <div className={`flex space-x-2 text-sm font-normal whitespace-nowrap ${textColor}`}>
+        <div className={`ml-auto flex space-x-2 text-xs font-normal whitespace-nowrap md:text-sm ${textColor}`}>
           {isLoggedIn ? (
             <>
               <span onClick={() => navigate("/mypage")} className="cursor-pointer hover:underline">마이페이지</span>

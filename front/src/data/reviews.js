@@ -1,0 +1,17 @@
+export const reviews = [
+  { id: 1, city: "서울", type: "후기", title: "직거래 진행이 빨라 만족", car: "K5", price: "1억 4천", mine: true },
+  { id: 2, city: "서울", type: "후기", title: "상담이 친절하고 정확함", car: "쏘나타", price: "1억 1천", mine: false },
+  { id: 3, city: "서울", type: "후기", title: "서류 안내가 깔끔했음", car: "그랜저", price: "1억 6천", mine: false },
+  { id: 4, city: "서울", type: "후기", title: "당일 계약까지 완료", car: "아반떼", price: "9천", mine: true },
+  { id: 5, city: "서울", type: "후기", title: "예상보다 빠르게 인수", car: "K8", price: "1억 5천", mine: false },
+  { id: 6, city: "서울", type: "후기", title: "가격 협의가 수월했음", car: "SM6", price: "8천", mine: false },
+  { id: 7, city: "서울", type: "후기", title: "상태 좋은 차량 추천", car: "쏘렌토", price: "1억 8천", mine: true },
+  { id: 8, city: "서울", type: "후기", title: "필요 서류 설명이 쉬움", car: "카니발", price: "2억", mine: false },
+  { id: 9, city: "서울", type: "후기", title: "연락 응대가 빨라 좋음", car: "GV70", price: "1억 9천", mine: false },
+  { id: 10, city: "서울", type: "후기", title: "재방문 의사 있음", car: "K3", price: "7천", mine: true },
+  { id: 11, city: "서울", type: "후기", title: "조건 비교가 편했음", car: "레이", price: "6천", mine: false },
+  { id: 12, city: "서울", type: "후기", title: "진행 과정이 투명함", car: "투싼", price: "1억 2천", mine: false },
+  { id: 13, city: "서울", type: "후기", title: "다음 거래도 맡길 예정", car: "G80", price: "2억 2천", mine: true },
+  { id: 14, city: "서울", type: "후기", title: "차량 컨디션 설명 정확", car: "K9", price: "1억 7천", mine: false },
+  { id: 15, city: "서울", type: "후기", title: "질문 응답이 상세함", car: "모닝", price: "5천", mine: false },
+];

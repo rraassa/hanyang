@@ -31,6 +31,7 @@ function AppContent() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [isReturning, setIsReturning] = useState(false);
   const [isPageTransition, setIsPageTransition] = useState(false);
+  const [footerRevealProgress, setFooterRevealProgress] = useState(0);
 
   const mainCardsRef = useRef(null);
   const inquiryTriggerRef = useRef(null);
@@ -83,6 +84,48 @@ function AppContent() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [hasScrolledOnce, viewMode]);
 
+  useEffect(() => {
+    // 서브페이지(viewMode)에서는 스크롤 위치에 따라 헤더 색상 전환
+    if (!viewMode) return;
+
+    const handleViewModeHeader = () => {
+      setHeaderState(window.scrollY > 120 ? "scrolled" : "default");
+    };
+
+    handleViewModeHeader();
+    window.addEventListener("scroll", handleViewModeHeader, { passive: true });
+    return () => window.removeEventListener("scroll", handleViewModeHeader);
+  }, [viewMode]);
+
+  useEffect(() => {
+    // 서브페이지(viewMode) 하단 근처에서 footer가 아래에서 위로 서서히 나타남
+    if (!viewMode) return;
+
+    const revealDistance = 220;
+    const updateFooterReveal = () => {
+      const scrollBottom = window.scrollY + window.innerHeight;
+      const fullHeight = document.documentElement.scrollHeight;
+      const distanceToBottom = Math.max(0, fullHeight - scrollBottom);
+      const rawProgress = (revealDistance - distanceToBottom) / revealDistance;
+      const clampedProgress = Math.min(1, Math.max(0, rawProgress));
+      setFooterRevealProgress(clampedProgress);
+    };
+
+    updateFooterReveal();
+    window.addEventListener("scroll", updateFooterReveal, { passive: true });
+    window.addEventListener("resize", updateFooterReveal);
+    return () => {
+      window.removeEventListener("scroll", updateFooterReveal);
+      window.removeEventListener("resize", updateFooterReveal);
+    };
+  }, [viewMode]);
+
+  useEffect(() => {
+    if (!viewMode) {
+      setFooterRevealProgress(0);
+    }
+  }, [viewMode]);
+
   const handleNavigate = (mode) => {
     if (mode === "home") {
       console.log("[Front] Starting return animation");
@@ -96,6 +139,9 @@ function AppContent() {
         setIsReturning(false);
         setIsAnimating(false);
         setIsPageTransition(false);
+        setHasScrolledOnce(false);
+        setHeaderState("default");
+        window.scrollTo({ top: 0, behavior: "auto" });
       }, 700);
       return;
     }
@@ -122,9 +168,16 @@ function AppContent() {
     }
   };
 
+  useEffect(() => {
+    // 메인 복귀 직후 간헐적으로 scrolled 상태가 남는 문제 방지
+    if (!viewMode && window.scrollY <= 4) {
+      setHeaderState("default");
+    }
+  }, [viewMode]);
+
   return (
     <div className="bg-[#EBEAF3] min-h-screen font-sans text-gray-900">
-      {!isAuthPage && <Header colorType={!viewMode ? headerState : "default"} onNavigate={handleNavigate} />}
+      {!isAuthPage && <Header colorType={headerState} onNavigate={handleNavigate} />}
 
       <Routes>
         <Route
@@ -134,7 +187,7 @@ function AppContent() {
               {!viewMode && <MainVisual />}
               <div className="w-full transition-all duration-700 ease-in-out">
                 {viewMode ? (
-                  <div className="w-full h-screen flex flex-col">
+                  <div className="w-full min-h-screen flex flex-col">
                     {/* Header spacer */}
                     <div className="h-20 bg-[#EBEAF3]"></div>
                     {/* Purple section - 애니메이션으로 높이가 변함 */}
@@ -144,7 +197,7 @@ function AppContent() {
                     {/* Content section with two-stage animation */}
                     <div className="bg-[#fafaf5] w-full rounded-tr-[5rem] flex-1 flex flex-col relative overflow-hidden">
                       <div
-                        className={`w-full h-full flex flex-col transition-all duration-700 ease-out relative z-10 ${
+                        className={`w-full flex flex-col transition-all duration-700 ease-out relative z-10 ${
                           isReturning
                             ? "transform translate-y-full opacity-0"
                             : isAnimating
@@ -161,8 +214,8 @@ function AppContent() {
                           }
                         }}
                       >
-                        <div className="flex-1 flex flex-col">
-                          <div className="flex-1 flex items-start justify-center pt-10">
+                        <div className="flex-1">
+                          <div className="px-4 pt-10">
                             <div className={`transition-opacity duration-250 ease-in-out ${
                               isPageTransition ? 'opacity-0' : 'opacity-100'
                             }`}>
@@ -172,19 +225,32 @@ function AppContent() {
                               {viewMode === "inquiry" && <InquiryView />}
                               {viewMode === "review" && <ReviewView />}
                             </div>
+                            <div
+                              className="overflow-hidden bg-[#fafaf5] shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.1)]"
+                              style={{
+                                marginTop: `${24 * footerRevealProgress}px`,
+                                maxHeight: `${104 * footerRevealProgress}px`,
+                                opacity: footerRevealProgress,
+                                transform: `translateY(${16 * (1 - footerRevealProgress)}px)`,
+                                pointerEvents: footerRevealProgress > 0 ? "auto" : "none",
+                                transition:
+                                  "max-height 240ms ease-out, opacity 220ms ease-out, transform 280ms ease-out, margin-top 260ms ease-out",
+                              }}
+                            >
+                              <Footer />
+                            </div>
                           </div>
-                          <Footer />
                         </div>
                       </div>
                     </div>
                   </div>
                 ) : (
                   <div className="transform">
-                    <div className="bg-[#fafaf5] rounded-tr-[5rem] shadow-[0_4px_12px_rgba(0,0,0,0.2)] px-10 pt-40 pb-16 w-full relative overflow-visible">
-                      <div className="absolute -top-20 left-1/2 -translate-x-1/2 z-10" ref={mainCardsRef}>
+                    <div className="bg-[#fafaf5] rounded-tr-[3rem] md:rounded-tr-[5rem] shadow-[0_4px_12px_rgba(0,0,0,0.2)] px-4 md:px-10 pt-24 md:pt-40 pb-10 md:pb-16 w-full relative overflow-visible">
+                      <div className="absolute -top-10 md:-top-20 left-1/2 -translate-x-1/2 z-10 w-[95%] md:w-auto" ref={mainCardsRef}>
                         <MainCards onNavigate={handleNavigate} />
                       </div>
-                      <ReviewSection />
+                      <ReviewSection onViewAll={() => handleNavigate("review")} />
                       <ListingTable />
                     </div>
                     <InquirySection />
