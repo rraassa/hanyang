@@ -1,5 +1,9 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { useState } from 'react';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Label } from '../components/ui/Label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
 
 export default function SignupPage() {
   const navigate = useNavigate();
@@ -85,7 +89,16 @@ export default function SignupPage() {
       <div className="flex w-full max-w-5xl bg-white shadow-2xl rounded-lg overflow-hidden relative">
         {/* 왼쪽 폼 */}
         <div className="w-1/2 p-10 flex flex-col justify-center z-10 relative bg-white">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">회원가입</h2>
+          <div className="relative pt-4 mb-4">
+            <button 
+              onClick={() => navigate("/")}
+              className="absolute -top-4 -left-4 text-gray-600 hover:text-gray-800 transition-colors duration-200 flex items-center gap-1"
+            >
+              <span className="text-lg font-black leading-none">&lt;</span>
+              <span className="text-xs relative top-[1px]">메인페이지로</span>
+            </button>
+            <h2 className="text-xl font-semibold text-gray-800">회원가입</h2>
+          </div>
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* 이메일 입력 */}
             <div>

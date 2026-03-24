@@ -1,21 +1,27 @@
 import { useEffect, useState } from 'react';
+import { reviews } from "../data/reviews";
 
-const allReviews = [
-  { id: 1, city: '서울', category: '택시', text: '차량을 구매했는데 너무 좋아요', car: '쏘나타', price: '1억 6000만원' },
-  { id: 2, city: '서울', category: '택시', text: '친절한 상담 감사합니다', car: '아반떼', price: '9천만원' },
-  { id: 3, city: '서울', category: '일반차', text: '딜러가 최고였어요', car: '그랜저', price: '1억 2천만원' },
-  { id: 4, city: '서울', category: '일반차', text: '빠른 진행 감사합니다', car: '모닝', price: '6천만원' },
-  { id: 5, city: '서울', category: '택시', text: '가격이 만족스러워요', car: 'K5', price: '1억' },
-  { id: 6, city: '서울', category: '택시', text: '좋은 컨디션 차량이었어요', car: '쏘렌토', price: '1억 3천만원' },
-  { id: 7, city: '서울', category: '일반차', text: '빠르게 구매했어요', car: '벤츠', price: '2억' },
-  { id: 8, city: '서울', category: '일반차', text: '정말 만족합니다', car: 'BMW', price: '1억 8천만원' },
-];
-
-export default function SlidingReviewSection() {
+export default function SlidingReviewSection({ onViewAll }) {
+  const allReviews = reviews.slice(0, 8);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const cardWidth = 320;
-  const visibleCount = 4;
-  const maxIndex = allReviews.length - visibleCount;
+  const [cardWidth, setCardWidth] = useState(320);
+  const [visibleCount, setVisibleCount] = useState(4);
+  const maxIndex = Math.max(0, allReviews.length - visibleCount);
+
+  useEffect(() => {
+    const updateSize = () => {
+      if (window.innerWidth < 768) {
+        setCardWidth(260);
+        setVisibleCount(1);
+      } else {
+        setCardWidth(320);
+        setVisibleCount(4);
+      }
+    };
+    updateSize();
+    window.addEventListener("resize", updateSize);
+    return () => window.removeEventListener("resize", updateSize);
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -25,14 +31,18 @@ export default function SlidingReviewSection() {
   }, [maxIndex]);
 
   return (
-    <section className="bg-[#FAFAF5] mt-44 py-10 px-6 flex justify-center">
-      <div className="w-[1280px] overflow-hidden">
+    <section className="bg-[#FAFAF5] mt-24 md:mt-44 py-10 px-4 md:px-6 flex justify-center">
+      <div className="w-full max-w-[1280px] overflow-hidden">
         {/* 제목 */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold text-black">구매 후기</h2>
-          <a href="/review" className="text-sm text-gray-600 hover:underline">
+          <button
+            type="button"
+            onClick={() => onViewAll?.()}
+            className="text-sm text-gray-600 hover:underline"
+          >
             전체보기
-          </a>
+          </button>
         </div>
 
         {/* 슬라이더 */}
@@ -60,7 +70,7 @@ export default function SlidingReviewSection() {
                   </div>
 
                   {/* 텍스트 */}
-                  <p className="text-sm text-black font-medium mb-1">{review.text}</p>
+                  <p className="text-sm text-black font-semibold mb-1">{review.title}</p>
                   <p className="text-sm text-gray-700">{review.car} / {review.price}</p>
                 </div>
               </div>

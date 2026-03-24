@@ -1,13 +1,13 @@
 export default function MainHeroSection() {
   return (
-    <section className="bg-[#EBEAF3] py-16 px-6">
+    <section className="bg-[#EBEAF3] py-10 md:py-16 px-4 md:px-6">
       <div className="max-w-screen-xl mx-auto flex flex-col lg:flex-row items-center justify-between">
         {/* 왼쪽 텍스트 영역 */}
-        <div className="flex-1 mb-10 lg:mb-0 flex items-center">
+        <div className="flex-1 mb-8 lg:mb-0 flex items-center">
           <div>
             <p className="text-sm text-gray-600 mb-2">#차량양도 #판매 #차량등록 #구매</p>
             <h2
-              className="text-2xl md:text-3xl font-bold text-gray-800 leading-loose"
+              className="text-xl md:text-3xl font-bold text-gray-800 leading-snug md:leading-loose"
             >
               차량 판매도, 구매도 고민이라면? <br />
               믿고 맡길 수 있는 <span className="text-[#0E2A7B]">한양상사</span>가 함께합니다.

@@ -18,7 +18,7 @@ export default function ListingBox() {
   ];
 
   return (
-    <section className="mt-20 w-full px-20 py-6 bg-[#fafaf5]">
+    <section className="mt-16 md:mt-20 w-full px-4 md:px-20 py-6 bg-[#fafaf5]">
       <h2 className="text-xl font-bold mb-4 text-[#0E2A7B]">매물 목록</h2>
 
       {/* 매물 리스트 전체를 감싸는 흰색 박스 */}
@@ -30,23 +30,23 @@ export default function ListingBox() {
             return (
               <div
                 key={idx}
-                className="group px-4 py-5 w-full flex justify-between items-center min-h-[100px] bg-white"
+                className="group px-4 py-4 md:py-5 w-full flex flex-col md:flex-row justify-between md:items-center min-h-[100px] bg-white gap-3 md:gap-0"
               >
                 {/* 왼쪽 정보 */}
-                <div className="flex flex-row items-center gap-6 w-full">
-                  <p className="text-base text-gray-500 group-hover:scale-105 transition-transform duration-300">
+                <div className="flex flex-row items-center gap-3 md:gap-6 w-full">
+                  <p className="text-sm md:text-base text-gray-500 group-hover:scale-105 transition-transform duration-300">
                     {item.date}
                   </p>
-                  <p className="text-xl font-bold text-[#0E2A7B] group-hover:scale-110 transition-transform duration-300">
+                  <p className="text-lg md:text-xl font-bold text-[#0E2A7B] group-hover:scale-110 transition-transform duration-300">
                     {item.model}
                   </p>
-                  <p className="text-base text-gray-600 group-hover:scale-105 transition-transform duration-300">
+                  <p className="text-sm md:text-base text-gray-600 group-hover:scale-105 transition-transform duration-300">
                     {item.location}
                   </p>
                 </div>
 
                 {/* 상태 텍스트 */}
-                <div className="min-w-[100px] text-right">
+                <div className="w-full md:min-w-[100px] text-left md:text-right">
                   <p
                     className={`text-base font-semibold transition duration-300 group-hover:scale-110 ${
                       isAvailable
