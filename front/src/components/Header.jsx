@@ -79,21 +79,21 @@ export default function Header({ colorType, onNavigate }) {
               <button
                 type="button"
                 onClick={() => setIsProfileMenuOpen((prev) => !prev)}
-                className="flex h-11 w-11 items-center justify-center rounded-full border-[4px] border-black bg-[#17368F] text-2xl font-extrabold text-white md:h-12 md:w-12 md:text-3xl"
+                className="flex h-9 w-9 items-center justify-center rounded-full border-[3px] border-black bg-[#17368F] text-xl font-extrabold text-white md:h-10 md:w-10 md:text-2xl"
                 aria-label="프로필 메뉴 열기"
               >
                 {(displayName || "L").charAt(0).toUpperCase()}
               </button>
 
               {isProfileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-28 overflow-hidden rounded-xl border border-gray-200 bg-white text-black shadow-[0_8px_18px_rgba(0,0,0,0.2)]">
+                <div className="absolute right-0 mt-2 w-28 overflow-hidden rounded-xl border border-gray-200 bg-[#fafaf5] text-black shadow-[0_8px_18px_rgba(0,0,0,0.2)]">
                   <button
                     type="button"
                     onClick={() => {
                       onNavigate?.("review");
                       setIsProfileMenuOpen(false);
                     }}
-                    className="w-full px-3 py-2 text-lg font-bold hover:bg-gray-50"
+                    className="w-full px-3 py-2 text-xs font-semibold md:text-[15px] hover:bg-[#f0efe8]"
                   >
                     나의 후기
                   </button>
@@ -107,7 +107,7 @@ export default function Header({ colorType, onNavigate }) {
                       navigate("/");
                       setTimeout(() => window.location.reload(), 10);
                     }}
-                    className="w-full px-3 py-2 text-lg font-bold hover:bg-gray-50"
+                    className="w-full px-3 py-2 text-xs font-semibold md:text-[15px] hover:bg-[#f0efe8]"
                   >
                     로그아웃
                   </button>
