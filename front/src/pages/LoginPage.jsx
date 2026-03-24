@@ -4,35 +4,31 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Label } from '../components/ui/Label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
+import { signIn } from '../lib/cognito';
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8080/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (res.ok) {
-        alert("로그인 성공!");
-        localStorage.setItem("isLoggedIn", "true");
-        navigate("/");
-        setTimeout(() => window.location.reload(), 10);
-      } else {
-        alert("로그인 실패!");
-      }
+      const tokens = await signIn(email, password);
+      localStorage.setItem("accessToken", tokens.accessToken);
+      localStorage.setItem("idToken", tokens.idToken);
+      localStorage.setItem("isLoggedIn", "true");
+      alert("로그인 성공!");
+      navigate("/");
+      setTimeout(() => window.location.reload(), 10);
     } catch (err) {
       console.error("로그인 오류:", err);
-      alert("서버 오류 발생");
+      alert(err.message || "로그인 실패!");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -40,7 +36,6 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <Card className="w-full max-w-5xl shadow-2xl">
         <div className="flex overflow-hidden">
-          {/* 왼쪽 폼 영역 */}
           <div className="w-1/2 p-10 flex flex-col justify-center z-10 relative bg-card">
             <CardHeader className="relative pt-8">
               <button 
@@ -64,6 +59,7 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="이메일을 입력하세요"
+                    required
                   />
                 </div>
                 <div className="space-y-2">
@@ -74,6 +70,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="비밀번호를 입력하세요"
+                    required
                   />
                 </div>
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -85,8 +82,8 @@ export default function LoginPage() {
                     비밀번호 찾기
                   </a>
                 </div>
-                <Button type="submit" className="w-full">
-                  로그인
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? '로그인 중...' : '로그인'}
                 </Button>
                 <Button
                   type="button"
@@ -105,7 +102,6 @@ export default function LoginPage() {
             </CardContent>
           </div>
 
-          {/* 오른쪽 회색 영역 + 이미지 */}
           <div className="w-1/2 bg-muted relative">
             <img
               src="/img/login-bg.png"

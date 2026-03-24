@@ -1,197 +1,166 @@
-import { useNavigate, Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Label } from '../components/ui/Label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
+import { signUp, confirmSignUp } from '../lib/cognito';
 
 export default function SignupPage() {
   const navigate = useNavigate();
+  const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
-  const [emailVerified, setEmailVerified] = useState(false);
-  const [showCodeModal, setShowCodeModal] = useState(false);
-  const [verificationCode, setVerificationCode] = useState('');
   const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  // 이메일 인증 요청
-  const handleEmailVerification = async () => {
-    try {
-      const res = await fetch(`http://localhost:8080/api/auth/send-code?email=${email}`, {
-        method: 'POST',
-      });
-      const text = await res.text();
-
-      if (!res.ok) {
-        alert(text || '인증 요청 실패');
-        return;
-      }
-
-      if (text.includes('이미')) {
-        alert(text);
-        return;
-      }
-
-      setShowCodeModal(true);
-    } catch (err) {
-      alert('이메일 인증 요청 중 오류 발생');
-    }
-  };
-
-  // 인증 코드 확인
-  const handleCodeConfirm = async () => {
-    try {
-      const res = await fetch(
-        `http://localhost:8080/api/auth/verify-code?email=${email}&code=${verificationCode}`,
-        { method: 'POST' }
-      );
-      const text = await res.text();
-      if (text.includes('성공')) {
-        alert('✅ 인증 성공!');
-        setEmailVerified(true);
-        setShowCodeModal(false);
-      } else {
-        alert(text);
-      }
-    } catch {
-      alert('인증 확인 중 오류 발생');
-    }
-  };
-
-  // 회원가입 요청
-  const handleSubmit = async (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
-    if (!emailVerified) return alert('이메일 인증이 필요합니다.');
-    if (password !== confirm) return alert('비밀번호가 일치하지 않습니다.');
+
+    if (password !== confirmPassword) {
+      alert('비밀번호가 일치하지 않습니다.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await signUp(email, password, name);
+      alert('회원가입 성공! 이메일로 전송된 인증 코드를 입력해주세요.');
+      setStep(2);
+    } catch (err) {
+      console.error('회원가입 오류:', err);
+      alert(err.message || '회원가입 실패!');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerification = async (e) => {
+    e.preventDefault();
+    setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:8080/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const text = await res.text();
-
-      if (res.ok && text.includes('성공')) {
-        alert('🎉 회원가입 성공');
-        navigate('/login');
-      } else {
-        alert(text);
-      }
-    } catch {
-      alert('회원가입 요청 실패');
+      await confirmSignUp(email, verificationCode);
+      alert('이메일 인증 완료! 로그인해주세요.');
+      navigate('/login');
+    } catch (err) {
+      console.error('인증 오류:', err);
+      alert(err.message || '인증 실패!');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#FAFAF5] px-4">
-      <div className="flex w-full max-w-5xl bg-white shadow-2xl rounded-lg overflow-hidden relative">
-        {/* 왼쪽 폼 */}
-        <div className="w-1/2 p-10 flex flex-col justify-center z-10 relative bg-white">
-          <div className="relative pt-4 mb-4">
-            <button 
-              onClick={() => navigate("/")}
-              className="absolute -top-4 -left-4 text-gray-600 hover:text-gray-800 transition-colors duration-200 flex items-center gap-1"
-            >
-              <span className="text-lg font-black leading-none">&lt;</span>
-              <span className="text-xs relative top-[1px]">메인페이지로</span>
-            </button>
-            <h2 className="text-xl font-semibold text-gray-800">회원가입</h2>
-          </div>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* 이메일 입력 */}
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">이메일</label>
-              <div className="flex gap-2">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={emailVerified}
-                  className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm"
-                />
-                {!emailVerified && (
-                  <button
-                    type="button"
-                    onClick={handleEmailVerification}
-                    className="px-3 py-2 text-sm border border-black rounded"
-                  >
-                    인증
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* 비밀번호 */}
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">비밀번호</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-              />
-            </div>
-
-            {/* 비밀번호 확인 */}
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">비밀번호 확인</label>
-              <input
-                type="password"
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-              />
-            </div>
-
-            {/* 제출 */}
-            <button
-              type="submit"
-              className="w-full bg-[#0E2A7B] text-white py-2 rounded text-sm hover:bg-[#1b3b9b]"
-            >
-              회원가입
-            </button>
-
-            <div className="text-center text-xs mt-2 text-gray-600">
-              <Link to="/login" className="hover:underline text-[#0E2A7B]">
-                이미 계정이 있으신가요? 로그인
-              </Link>
-            </div>
-          </form>
-        </div>
-
-        {/* 오른쪽 이미지 */}
-        <div className="w-1/2 bg-[#F5F5F5] relative">
-          <img
-            src="/img/login-bg.png"
-            alt="Signup Visual"
-            className="absolute inset-0 w-full h-full object-cover translate-x-[10%]"
-          />
-        </div>
-
-        {/* 인증 모달 */}
-        {showCodeModal && (
-          <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-30 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow-md w-[300px] space-y-3">
-              <h3 className="text-sm font-semibold">인증 코드 입력</h3>
-              <input
-                type="text"
-                value={verificationCode}
-                onChange={(e) => setVerificationCode(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-                placeholder="이메일로 받은 인증번호"
-              />
-              <button
-                onClick={handleCodeConfirm}
-                className="w-full bg-[#0E2A7B] text-white py-2 rounded text-sm hover:bg-[#1b3b9b]"
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <Card className="w-full max-w-5xl shadow-2xl">
+        <div className="flex overflow-hidden">
+          <div className="w-1/2 p-10 flex flex-col justify-center z-10 relative bg-card">
+            <CardHeader className="relative pt-8">
+              <button 
+                onClick={() => navigate("/")}
+                className="absolute -top-2 -left-2 text-gray-600 hover:text-gray-800 transition-colors duration-200 flex items-center gap-1"
               >
-                확인
+                <span className="text-lg font-black leading-none">&lt;</span>
+                <span className="text-xs relative top-[1px]">메인페이지로</span>
               </button>
-            </div>
+              <CardTitle className="text-xl">
+                {step === 1 ? '회원가입' : '이메일 인증'}
+              </CardTitle>
+              <CardDescription>
+                {step === 1 ? '최고의 서비스로 보답드리겠습니다' : '이메일로 전송된 인증 코드를 입력하세요'}
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent>
+              {step === 1 ? (
+                <form className="space-y-4" onSubmit={handleSignup}>
+                  <div className="space-y-2">
+                    <Label htmlFor="name">이름</Label>
+                    <Input
+                      id="name"
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="이름을 입력하세요"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">이메일</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="이메일을 입력하세요"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">비밀번호</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="비밀번호를 입력하세요 (최소 8자, 대소문자, 숫자 포함)"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">비밀번호 확인</Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="비밀번호를 다시 입력하세요"
+                      required
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? '가입 중...' : '회원가입'}
+                  </Button>
+                  <div className="text-center text-xs mt-2 text-muted-foreground">
+                    이미 계정이 있으신가요?{' '}
+                    <Link to="/login" className="hover:underline text-primary">
+                      로그인
+                    </Link>
+                  </div>
+                </form>
+              ) : (
+                <form className="space-y-4" onSubmit={handleVerification}>
+                  <div className="space-y-2">
+                    <Label htmlFor="code">인증 코드</Label>
+                    <Input
+                      id="code"
+                      type="text"
+                      value={verificationCode}
+                      onChange={(e) => setVerificationCode(e.target.value)}
+                      placeholder="6자리 인증 코드"
+                      required
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? '인증 중...' : '인증 완료'}
+                  </Button>
+                </form>
+              )}
+            </CardContent>
           </div>
-        )}
-      </div>
+
+          <div className="w-1/2 bg-muted relative">
+            <img
+              src="/img/login-bg.png"
+              alt="Signup Visual"
+              className="absolute inset-0 w-full h-full object-cover translate-x-[10%]"
+            />
+          </div>
+        </div>
+      </Card>
     </div>
   );
 }

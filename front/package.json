@@ -3,13 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "amazon-cognito-identity-js": "^6.3.16",
+    "aws-amplify": "^6.16.3",
+    "clsx": "^2.0.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.3",
     "react-scripts": "5.0.1",
-    "tailwind-scrollbar-hide": "^4.0.0",
-    "clsx": "^2.0.0",
-    "tailwind-merge": "^2.0.0"
+    "tailwind-merge": "^2.0.0",
+    "tailwind-scrollbar-hide": "^4.0.0"
   },
   "scripts": {
     "start": "react-scripts start",
