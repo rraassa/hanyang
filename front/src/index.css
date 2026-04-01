@@ -38,7 +38,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply m-0 bg-background text-foreground;
   }
 }
 

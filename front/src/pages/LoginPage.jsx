@@ -23,6 +23,17 @@ export default function LoginPage() {
       localStorage.setItem("idToken", tokens.idToken);
       localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("displayName", localStorage.getItem("nickname") || fallbackName);
+      
+      // 관리자 권한 체크
+      try {
+        const payload = JSON.parse(atob(tokens.idToken.split('.')[1]));
+        const groups = payload?.["cognito:groups"] || [];
+        const isAdmin = groups.some(g => String(g).toLowerCase().includes("admin"));
+        localStorage.setItem("isAdmin", isAdmin ? "true" : "false");
+      } catch (e) {
+        localStorage.setItem("isAdmin", "false");
+      }
+      
       alert("로그인 성공!");
       navigate("/");
       setTimeout(() => window.location.reload(), 10);

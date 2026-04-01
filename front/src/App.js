@@ -232,20 +232,20 @@ function AppContent() {
                               {viewMode === "inquiry" && <InquiryView />}
                               {viewMode === "review" && <ReviewView />}
                             </div>
-                            <div
-                              className="overflow-hidden bg-[#fafaf5] shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.1)]"
-                              style={{
-                                marginTop: `${24 * footerRevealProgress}px`,
-                                maxHeight: `${104 * footerRevealProgress}px`,
-                                opacity: footerRevealProgress,
-                                transform: `translateY(${16 * (1 - footerRevealProgress)}px)`,
-                                pointerEvents: footerRevealProgress > 0 ? "auto" : "none",
-                                transition:
-                                  "max-height 240ms ease-out, opacity 220ms ease-out, transform 280ms ease-out, margin-top 260ms ease-out",
-                              }}
-                            >
-                              <Footer />
-                            </div>
+                          </div>
+                          <div
+                            className="overflow-hidden bg-[#fafaf5] shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.1)]"
+                            style={{
+                              marginTop: `${24 * footerRevealProgress}px`,
+                              maxHeight: `${104 * footerRevealProgress}px`,
+                              opacity: footerRevealProgress,
+                              transform: `translateY(${16 * (1 - footerRevealProgress)}px)`,
+                              pointerEvents: footerRevealProgress > 0 ? "auto" : "none",
+                              transition:
+                                "max-height 240ms ease-out, opacity 220ms ease-out, transform 280ms ease-out, margin-top 260ms ease-out",
+                            }}
+                          >
+                            <Footer />
                           </div>
                         </div>
                       </div>
