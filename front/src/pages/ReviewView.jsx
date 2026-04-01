@@ -1,149 +1,102 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { reviews } from "../data/reviews";
-
-const TAB_ALL = "all";
-const TAB_MINE = "mine";
-const PAGE_SIZE = 12;
-const REVIEW_STORAGE_PREFIX = "myReviews:";
-
-const parseJwtPayload = (token) => {
-  if (!token) return null;
-  try {
-    const base64Url = token.split(".")[1];
-    if (!base64Url) return null;
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-    const json = decodeURIComponent(
-      atob(base64)
-        .split("")
-        .map((char) => `%${`00${char.charCodeAt(0).toString(16)}`.slice(-2)}`)
-        .join("")
-    );
-    return JSON.parse(json);
-  } catch {
-    return null;
-  }
-};
-
-const getCurrentUserKey = () => {
-  const payload = parseJwtPayload(localStorage.getItem("idToken"));
-  return payload?.sub || payload?.email || localStorage.getItem("displayName") || "anonymous";
-};
+import { getAllReviews, getMyReviews, createReview } from "../lib/reviewApi";
 
 export default function ReviewView() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState(TAB_ALL);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [activeTab, setActiveTab] = useState("all");
+  const [allReviews, setAllReviews] = useState([]);
   const [myReviews, setMyReviews] = useState([]);
-  const [currentUserKey, setCurrentUserKey] = useState(getCurrentUserKey());
+  const [loading, setLoading] = useState(true);
   const [isWritePageOpen, setIsWritePageOpen] = useState(false);
   const [draftTitle, setDraftTitle] = useState("");
   const [draftContent, setDraftContent] = useState("");
-  const [attachedFileName, setAttachedFileName] = useState("");
   const [selectedReview, setSelectedReview] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 12;
 
+  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+
+  // 후기 로드
   useEffect(() => {
-    const syncUser = () => setCurrentUserKey(getCurrentUserKey());
-    window.addEventListener("auth:changed", syncUser);
-    window.addEventListener("storage", syncUser);
-    return () => {
-      window.removeEventListener("auth:changed", syncUser);
-      window.removeEventListener("storage", syncUser);
-    };
+    loadReviews();
   }, []);
 
-  useEffect(() => {
-    const raw = localStorage.getItem(`${REVIEW_STORAGE_PREFIX}${currentUserKey}`);
-    if (!raw) {
-      setMyReviews([]);
-      return;
-    }
+  const loadReviews = async () => {
+    setLoading(true);
     try {
-      setMyReviews(JSON.parse(raw));
-    } catch {
-      setMyReviews([]);
+      const all = await getAllReviews();
+      setAllReviews(all);
+      
+      if (isLoggedIn) {
+        try {
+          const my = await getMyReviews();
+          setMyReviews(my);
+        } catch (e) {
+          console.error("내 후기 로드 실패:", e);
+        }
+      }
+    } catch (error) {
+      console.error("후기 로드 실패:", error);
+    } finally {
+      setLoading(false);
     }
-  }, [currentUserKey]);
-
-  useEffect(() => {
-    localStorage.setItem(`${REVIEW_STORAGE_PREFIX}${currentUserKey}`, JSON.stringify(myReviews));
-  }, [currentUserKey, myReviews]);
-
-  const reviewList = useMemo(() => [...myReviews, ...reviews], [myReviews]);
-
-  const filteredReviews = useMemo(() => {
-    if (activeTab === TAB_MINE) return myReviews;
-    return reviewList;
-  }, [activeTab, myReviews, reviewList]);
-
-  const totalPages = Math.max(1, Math.ceil(filteredReviews.length / PAGE_SIZE));
-  const safePage = Math.min(currentPage, totalPages);
-  const pagedReviews = filteredReviews.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  };
 
   const handleTabChange = (tab) => {
-    if (tab === TAB_MINE && localStorage.getItem("isLoggedIn") !== "true") {
+    if (tab === "mine" && !isLoggedIn) {
       alert("내 후기는 로그인 후 확인할 수 있습니다.");
       navigate("/login");
       return;
     }
-
     setActiveTab(tab);
     setCurrentPage(1);
   };
 
-  const handleCreateReview = () => {
-    const trimmedTitle = draftTitle.trim();
-    const trimmedContent = draftContent.trim();
-
-    if (!trimmedTitle || !trimmedContent) {
+  const handleCreateReview = async () => {
+    if (!draftTitle.trim() || !draftContent.trim()) {
       alert("제목과 내용을 모두 입력해 주세요.");
       return;
     }
 
-    const nextId = Date.now();
-    const newReview = {
-      id: nextId,
-      city: "서울",
-      type: "후기",
-      title: trimmedTitle,
-      car: "작성자 후기",
-      price: "미입력",
-      mine: true,
-      content: trimmedContent,
-      image: "/img/review-placeholder.png",
-      ownerKey: currentUserKey,
-    };
-
-    setMyReviews((prev) => [newReview, ...prev]);
-    setActiveTab(TAB_MINE);
-    setCurrentPage(1);
-    setDraftTitle("");
-    setDraftContent("");
-    setAttachedFileName("");
-    setIsWritePageOpen(false);
+    try {
+      await createReview(draftTitle.trim(), draftContent.trim());
+      alert("후기가 작성되었습니다!");
+      setDraftTitle("");
+      setDraftContent("");
+      setIsWritePageOpen(false);
+      setActiveTab("mine");
+      await loadReviews();
+    } catch (error) {
+      alert(error.message || "후기 작성에 실패했습니다.");
+    }
   };
 
   const handleOpenWritePage = () => {
-    if (localStorage.getItem("isLoggedIn") !== "true") {
+    if (!isLoggedIn) {
       alert("후기 작성은 로그인 후 이용할 수 있습니다.");
       navigate("/login");
       return;
     }
-
     setIsWritePageOpen(true);
   };
 
-  useEffect(() => {
-    const handleAppNavigate = (event) => {
-      if (event.detail?.mode === "review") {
-        setIsWritePageOpen(false);
-        setSelectedReview(null);
-      }
-    };
+  const displayReviews = activeTab === "mine" ? myReviews : allReviews;
+  const totalPages = Math.max(1, Math.ceil(displayReviews.length / PAGE_SIZE));
+  const safePage = Math.min(currentPage, totalPages);
+  const pagedReviews = displayReviews.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
-    window.addEventListener("app:navigate", handleAppNavigate);
-    return () => window.removeEventListener("app:navigate", handleAppNavigate);
-  }, []);
+  if (loading) {
+    return (
+      <section className="w-full px-4 pb-8 md:pb-10">
+        <div className="mx-auto w-full max-w-[1220px] rounded-[10px] pt-4 md:pt-6">
+          <div className="text-center py-20">
+            <p className="text-lg text-gray-600">후기를 불러오는 중...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   if (isWritePageOpen) {
     return (
@@ -158,7 +111,7 @@ export default function ReviewView() {
             className="mt-3 h-12 w-full rounded-xl border border-[#efefef] bg-white px-4 text-base outline-none shadow-[0_4px_10px_rgba(0,0,0,0.06)] focus:border-[#0E2A7B]"
           />
 
-          <div className="mt-8 flex items-center justify-between">
+          <div className="mt-8">
             <label className="block text-2xl font-bold text-black">내용</label>
           </div>
           <textarea
@@ -168,26 +121,22 @@ export default function ReviewView() {
             className="mt-3 min-h-[320px] w-full resize-y rounded-xl border border-[#efefef] bg-white p-4 text-base outline-none shadow-[0_4px_10px_rgba(0,0,0,0.06)] focus:border-[#0E2A7B]"
           />
 
-          <div className="mt-6 flex items-center justify-between">
-            <label className="inline-flex h-10 min-w-24 cursor-pointer items-center justify-center rounded-full bg-white px-4 text-sm font-bold text-black shadow-[0_4px_10px_rgba(0,0,0,0.2)] transition-colors duration-200 hover:bg-[#f4f4f4]">
-              첨부파일
-              <input
-                type="file"
-                className="hidden"
-                onChange={(e) => setAttachedFileName(e.target.files?.[0]?.name || "")}
-              />
-            </label>
+          <div className="mt-6 flex items-center justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setIsWritePageOpen(false)}
+              className="h-10 min-w-20 rounded-full bg-gray-200 px-4 text-sm font-bold text-gray-700 hover:bg-gray-300"
+            >
+              취소
+            </button>
             <button
               type="button"
               onClick={handleCreateReview}
-              className="h-10 min-w-20 rounded-full bg-white px-4 text-sm font-bold text-black shadow-[0_4px_10px_rgba(0,0,0,0.2)] transition-colors duration-200 hover:bg-[#f4f4f4]"
+              className="h-10 min-w-20 rounded-full bg-[#0E2A7B] px-4 text-sm font-bold text-white hover:bg-[#0a1f5c]"
             >
               완료
             </button>
           </div>
-          {attachedFileName && (
-            <p className="mt-2 text-right text-xs text-gray-600">첨부됨: {attachedFileName}</p>
-          )}
         </div>
       </section>
     );
@@ -215,8 +164,10 @@ export default function ReviewView() {
               </span>
               <h3 className="mt-3 text-2xl font-extrabold text-black md:text-3xl">{selectedReview.title}</h3>
               <p className="mt-4 whitespace-pre-line text-base leading-relaxed text-gray-700 md:text-lg">
-                {selectedReview.content ||
-                  `${selectedReview.title} 관련 후기를 남겨주셨습니다.\n상담부터 계약까지 친절하고 빠르게 진행되어 만족하셨다는 내용입니다.`}
+                {selectedReview.content}
+              </p>
+              <p className="mt-4 text-sm text-gray-500">
+                작성일: {new Date(selectedReview.createdAt).toLocaleDateString('ko-KR')}
               </p>
             </div>
           </div>
@@ -234,9 +185,9 @@ export default function ReviewView() {
           <div className="flex items-center justify-center gap-6 md:gap-10">
             <button
               type="button"
-              onClick={() => handleTabChange(TAB_ALL)}
+              onClick={() => handleTabChange("all")}
               className={`w-40 rounded-xl py-3 text-base font-bold transition-all duration-200 md:w-52 md:py-3.5 md:text-lg ${
-                activeTab === TAB_ALL
+                activeTab === "all"
                   ? "bg-[#0E2A7B] text-white shadow-[0_8px_18px_rgba(14,42,123,0.35)]"
                   : "bg-white text-[#0E2A7B] shadow-[0_4px_12px_rgba(0,0,0,0.12)]"
               }`}
@@ -245,9 +196,9 @@ export default function ReviewView() {
             </button>
             <button
               type="button"
-              onClick={() => handleTabChange(TAB_MINE)}
+              onClick={() => handleTabChange("mine")}
               className={`w-40 rounded-xl py-3 text-base font-bold transition-all duration-200 md:w-52 md:py-3.5 md:text-lg ${
-                activeTab === TAB_MINE
+                activeTab === "mine"
                   ? "bg-[#0E2A7B] text-white shadow-[0_8px_18px_rgba(14,42,123,0.35)]"
                   : "bg-white text-[#0E2A7B] shadow-[0_4px_12px_rgba(0,0,0,0.12)]"
               }`}
@@ -270,7 +221,7 @@ export default function ReviewView() {
         <div className="mt-10 grid grid-cols-1 gap-x-10 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:mt-12">
           {pagedReviews.map((review) => (
             <article
-              key={review.id}
+              key={review.reviewId}
               onClick={() => setSelectedReview(review)}
               className="group cursor-pointer"
             >
@@ -285,23 +236,33 @@ export default function ReviewView() {
           ))}
         </div>
 
-        <div className="mt-12 flex items-center justify-center gap-2">
-          {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((pageNumber) => {
-            const active = pageNumber === safePage;
-            return (
-              <button
-                key={pageNumber}
-                type="button"
-                onClick={() => setCurrentPage(pageNumber)}
-                className={`h-7 min-w-7 border border-[#0E2A7B] px-1.5 text-sm font-semibold ${
-                  active ? "bg-[#0E2A7B] text-white" : "bg-white text-[#0E2A7B]"
-                }`}
-              >
-                {pageNumber}
-              </button>
-            );
-          })}
-        </div>
+        {pagedReviews.length === 0 && (
+          <div className="text-center py-20">
+            <p className="text-gray-500">
+              {activeTab === "mine" ? "작성한 후기가 없습니다." : "등록된 후기가 없습니다."}
+            </p>
+          </div>
+        )}
+
+        {totalPages > 1 && (
+          <div className="mt-12 flex items-center justify-center gap-2">
+            {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((pageNumber) => {
+              const active = pageNumber === safePage;
+              return (
+                <button
+                  key={pageNumber}
+                  type="button"
+                  onClick={() => setCurrentPage(pageNumber)}
+                  className={`h-7 min-w-7 border border-[#0E2A7B] px-1.5 text-sm font-semibold ${
+                    active ? "bg-[#0E2A7B] text-white" : "bg-white text-[#0E2A7B]"
+                  }`}
+                >
+                  {pageNumber}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
     </section>
   );

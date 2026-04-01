@@ -23,7 +23,6 @@ export default function LoginPage() {
       });
 
       if (res.ok) {
-        alert("로그인 성공!");
         localStorage.setItem("isLoggedIn", "true");
         navigate("/");
         setTimeout(() => window.location.reload(), 10);
