@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const DEFAULT_PRICE_TEXT = "1억1천6백만원";
-const PRICE_STORAGE_KEY = "taxiMarketPriceText";
+const API_URL = "https://5ee7cm3sytpokhfy2bupy3sgui0xvqbn.lambda-url.ap-northeast-2.on.aws/";
 
 const parseJwtPayload = (token) => {
   if (!token) return null;
@@ -39,20 +39,35 @@ export default function PriceView() {
   const formattedDate = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, "0")}.${String(
     today.getDate()
   ).padStart(2, "0")}`;
-  const [priceText, setPriceText] = useState(localStorage.getItem(PRICE_STORAGE_KEY) || DEFAULT_PRICE_TEXT);
+  const [priceText, setPriceText] = useState(DEFAULT_PRICE_TEXT);
   const [draftPriceText, setDraftPriceText] = useState(priceText);
   const [isEditingPrice, setIsEditingPrice] = useState(false);
+  const [loading, setLoading] = useState(true);
   const isAdmin = useMemo(() => checkIsAdminUser(), []);
   const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
 
+  // 가격 조회
   useEffect(() => {
     if (!isLoggedIn) {
       alert("개인택시 시세는 로그인 후 확인할 수 있습니다.");
       navigate("/login");
+      return;
     }
+
+    fetch(API_URL)
+      .then(res => res.json())
+      .then(data => {
+        setPriceText(data.currentPrice || DEFAULT_PRICE_TEXT);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("가격 조회 실패:", err);
+        setPriceText(DEFAULT_PRICE_TEXT);
+        setLoading(false);
+      });
   }, [isLoggedIn, navigate]);
 
-  const handleToggleEdit = () => {
+  const handleToggleEdit = async () => {
     if (!isEditingPrice) {
       setDraftPriceText(priceText);
       setIsEditingPrice(true);
@@ -65,12 +80,44 @@ export default function PriceView() {
       return;
     }
 
-    setPriceText(nextPrice);
-    localStorage.setItem(PRICE_STORAGE_KEY, nextPrice);
-    setIsEditingPrice(false);
+    setLoading(true);
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          price: nextPrice,
+          updatedBy: localStorage.getItem("displayName") || "admin"
+        })
+      });
+
+      if (!response.ok) throw new Error("업데이트 실패");
+
+      const result = await response.json();
+      setPriceText(result.data.currentPrice);
+      setIsEditingPrice(false);
+      alert("가격이 업데이트되었습니다.");
+    } catch (error) {
+      console.error("가격 업데이트 실패:", error);
+      alert("가격 업데이트에 실패했습니다.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!isLoggedIn) return null;
+
+  if (loading) {
+    return (
+      <section className="w-full px-4 pb-8 md:pb-10">
+        <div className="mx-auto w-full max-w-[1220px] rounded-[10px] pt-4 md:pt-6">
+          <div className="text-center py-20">
+            <p className="text-lg text-gray-600">가격 정보를 불러오는 중...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="w-full px-4 pb-8 md:pb-10">
