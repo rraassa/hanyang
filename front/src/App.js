@@ -127,6 +127,12 @@ function AppContent() {
   }, [viewMode]);
 
   const handleNavigate = (mode) => {
+    window.dispatchEvent(
+      new CustomEvent("app:navigate", {
+        detail: { mode },
+      })
+    );
+
     if (mode === "home") {
       console.log("[Front] Starting return animation");
       setIsReturning(true);

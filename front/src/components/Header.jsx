@@ -79,7 +79,7 @@ export default function Header({ colorType, onNavigate }) {
               <button
                 type="button"
                 onClick={() => setIsProfileMenuOpen((prev) => !prev)}
-                className="flex h-9 w-9 items-center justify-center rounded-full border-[3px] border-black bg-[#17368F] text-xl font-extrabold text-white md:h-10 md:w-10 md:text-2xl"
+                className="flex h-7 w-7 items-center justify-center rounded-full border-[2px] border-black bg-[#17368F] text-base font-extrabold text-white md:h-8 md:w-8 md:text-lg"
                 aria-label="프로필 메뉴 열기"
               >
                 {(displayName || "L").charAt(0).toUpperCase()}
