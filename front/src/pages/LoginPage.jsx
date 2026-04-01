@@ -101,8 +101,7 @@ export default function LoginPage() {
                 </Button>
                 <Button
                   type="button"
-                  variant="secondary"
-                  className="w-full flex items-center justify-center gap-2"
+                  className="w-full flex items-center justify-center gap-2 bg-[#FEE500] hover:bg-[#FDD835] text-[#000000] font-medium"
                   onClick={kakaoLogin}
                 >
                   <img src="/img/kakao-icon.png" alt="kakao" className="w-4 h-4" />
