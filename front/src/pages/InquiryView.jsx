@@ -1,4 +1,19 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
 export default function InquiryView() {
+  const navigate = useNavigate();
+  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      alert("문의하기는 로그인 후 이용할 수 있습니다.");
+      navigate("/login");
+    }
+  }, [isLoggedIn, navigate]);
+
+  if (!isLoggedIn) return null;
+
   return (
     <section className="w-full px-4 pb-8 md:pb-10">
       <div className="mx-auto w-full max-w-[1220px] rounded-[10px] pt-4 md:pt-6">
