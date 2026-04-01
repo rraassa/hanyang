@@ -5,6 +5,7 @@ import { Input } from '../components/ui/Input';
 import { Label } from '../components/ui/Label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
 import { signIn } from '../lib/cognito';
+import { kakaoLogin } from '../lib/kakao';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -102,6 +103,7 @@ export default function LoginPage() {
                   type="button"
                   variant="secondary"
                   className="w-full flex items-center justify-center gap-2"
+                  onClick={kakaoLogin}
                 >
                   <img src="/img/kakao-icon.png" alt="kakao" className="w-4 h-4" />
                   카카오 계정으로 로그인

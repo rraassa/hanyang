@@ -15,6 +15,7 @@ import InquirySection from "./components/InquirySection";
 import Footer from "./components/Footer";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
+import KakaoCallback from "./pages/KakaoCallback";
 import TransferorView from "./pages/TransferorView";
 import AcceptorView from "./pages/AcceptorView";
 import PriceView from "./pages/PriceView";
@@ -270,6 +271,7 @@ function AppContent() {
         />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/auth/kakao/callback" element={<KakaoCallback />} />
       </Routes>
 
       {!isAuthPage && !viewMode && (
