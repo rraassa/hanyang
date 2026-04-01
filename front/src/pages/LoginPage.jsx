@@ -35,9 +35,8 @@ export default function LoginPage() {
         localStorage.setItem("isAdmin", "false");
       }
       
-      alert("로그인 성공!");
+      window.dispatchEvent(new Event("auth:changed"));
       navigate("/");
-      setTimeout(() => window.location.reload(), 10);
     } catch (err) {
       console.error("로그인 오류:", err);
       alert(err.message || "로그인 실패!");

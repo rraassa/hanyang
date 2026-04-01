@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const DEFAULT_PRICE_TEXT = "1억1천6백만원";
@@ -35,6 +35,7 @@ const checkIsAdminUser = () => {
 
 export default function PriceView() {
   const navigate = useNavigate();
+  const hasAlertedLoginRef = useRef(false);
   const today = new Date();
   const formattedDate = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, "0")}.${String(
     today.getDate()
@@ -49,7 +50,10 @@ export default function PriceView() {
   // 가격 조회
   useEffect(() => {
     if (!isLoggedIn) {
-      alert("개인택시 시세는 로그인 후 확인할 수 있습니다.");
+      if (!hasAlertedLoginRef.current) {
+        hasAlertedLoginRef.current = true;
+        alert("개인택시 시세는 로그인 후 확인할 수 있습니다.");
+      }
       navigate("/login");
       return;
     }

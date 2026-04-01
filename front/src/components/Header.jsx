@@ -12,8 +12,18 @@ export default function Header({ colorType, onNavigate }) {
   const profileMenuRef = useRef(null);
 
   useEffect(() => {
-    setIsLoggedIn(localStorage.getItem("isLoggedIn") === "true");
-    setDisplayName(localStorage.getItem("displayName") || localStorage.getItem("nickname") || "");
+    const syncAuthState = () => {
+      setIsLoggedIn(localStorage.getItem("isLoggedIn") === "true");
+      setDisplayName(localStorage.getItem("displayName") || localStorage.getItem("nickname") || "");
+    };
+
+    syncAuthState();
+    window.addEventListener("storage", syncAuthState);
+    window.addEventListener("auth:changed", syncAuthState);
+    return () => {
+      window.removeEventListener("storage", syncAuthState);
+      window.removeEventListener("auth:changed", syncAuthState);
+    };
   }, []);
 
   useEffect(() => {
@@ -104,8 +114,9 @@ export default function Header({ colorType, onNavigate }) {
                       localStorage.removeItem("isLoggedIn");
                       localStorage.removeItem("displayName");
                       localStorage.removeItem("nickname");
+                      localStorage.removeItem("isAdmin");
+                      window.dispatchEvent(new Event("auth:changed"));
                       navigate("/");
-                      setTimeout(() => window.location.reload(), 10);
                     }}
                     className="w-full px-3 py-2 text-xs font-semibold md:text-[15px] hover:bg-[#f0efe8]"
                   >

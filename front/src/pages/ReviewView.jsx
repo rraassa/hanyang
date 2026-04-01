@@ -5,21 +5,76 @@ import { reviews } from "../data/reviews";
 const TAB_ALL = "all";
 const TAB_MINE = "mine";
 const PAGE_SIZE = 12;
+const REVIEW_STORAGE_PREFIX = "myReviews:";
+
+const parseJwtPayload = (token) => {
+  if (!token) return null;
+  try {
+    const base64Url = token.split(".")[1];
+    if (!base64Url) return null;
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const json = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((char) => `%${`00${char.charCodeAt(0).toString(16)}`.slice(-2)}`)
+        .join("")
+    );
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+};
+
+const getCurrentUserKey = () => {
+  const payload = parseJwtPayload(localStorage.getItem("idToken"));
+  return payload?.sub || payload?.email || localStorage.getItem("displayName") || "anonymous";
+};
 
 export default function ReviewView() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(TAB_ALL);
   const [currentPage, setCurrentPage] = useState(1);
-  const [reviewList, setReviewList] = useState(reviews);
+  const [myReviews, setMyReviews] = useState([]);
+  const [currentUserKey, setCurrentUserKey] = useState(getCurrentUserKey());
   const [isWritePageOpen, setIsWritePageOpen] = useState(false);
   const [draftTitle, setDraftTitle] = useState("");
   const [draftContent, setDraftContent] = useState("");
   const [attachedFileName, setAttachedFileName] = useState("");
+  const [selectedReview, setSelectedReview] = useState(null);
+
+  useEffect(() => {
+    const syncUser = () => setCurrentUserKey(getCurrentUserKey());
+    window.addEventListener("auth:changed", syncUser);
+    window.addEventListener("storage", syncUser);
+    return () => {
+      window.removeEventListener("auth:changed", syncUser);
+      window.removeEventListener("storage", syncUser);
+    };
+  }, []);
+
+  useEffect(() => {
+    const raw = localStorage.getItem(`${REVIEW_STORAGE_PREFIX}${currentUserKey}`);
+    if (!raw) {
+      setMyReviews([]);
+      return;
+    }
+    try {
+      setMyReviews(JSON.parse(raw));
+    } catch {
+      setMyReviews([]);
+    }
+  }, [currentUserKey]);
+
+  useEffect(() => {
+    localStorage.setItem(`${REVIEW_STORAGE_PREFIX}${currentUserKey}`, JSON.stringify(myReviews));
+  }, [currentUserKey, myReviews]);
+
+  const reviewList = useMemo(() => [...myReviews, ...reviews], [myReviews]);
 
   const filteredReviews = useMemo(() => {
-    if (activeTab === TAB_MINE) return reviewList.filter((review) => review.mine);
+    if (activeTab === TAB_MINE) return myReviews;
     return reviewList;
-  }, [activeTab, reviewList]);
+  }, [activeTab, myReviews, reviewList]);
 
   const totalPages = Math.max(1, Math.ceil(filteredReviews.length / PAGE_SIZE));
   const safePage = Math.min(currentPage, totalPages);
@@ -45,7 +100,7 @@ export default function ReviewView() {
       return;
     }
 
-    const nextId = reviewList.reduce((maxId, item) => Math.max(maxId, item.id), 0) + 1;
+    const nextId = Date.now();
     const newReview = {
       id: nextId,
       city: "서울",
@@ -55,9 +110,11 @@ export default function ReviewView() {
       price: "미입력",
       mine: true,
       content: trimmedContent,
+      image: "/img/review-placeholder.png",
+      ownerKey: currentUserKey,
     };
 
-    setReviewList((prev) => [newReview, ...prev]);
+    setMyReviews((prev) => [newReview, ...prev]);
     setActiveTab(TAB_MINE);
     setCurrentPage(1);
     setDraftTitle("");
@@ -80,6 +137,7 @@ export default function ReviewView() {
     const handleAppNavigate = (event) => {
       if (event.detail?.mode === "review") {
         setIsWritePageOpen(false);
+        setSelectedReview(null);
       }
     };
 
@@ -135,6 +193,38 @@ export default function ReviewView() {
     );
   }
 
+  if (selectedReview) {
+    return (
+      <section className="w-full px-4 pb-8 md:pb-10">
+        <div className="mx-auto w-full max-w-[1220px] rounded-[10px] pt-4 md:pt-6">
+          <div className="mb-4">
+            <button
+              type="button"
+              onClick={() => setSelectedReview(null)}
+              className="rounded-lg bg-white px-3 py-2 text-sm font-semibold text-[#0E2A7B] shadow-[0_4px_12px_rgba(0,0,0,0.12)] hover:bg-[#f6f6f6]"
+            >
+              목록으로
+            </button>
+          </div>
+
+          <div className="overflow-hidden rounded-xl border border-[#E7E7E7] bg-[#fafaf5] shadow-[0_6px_20px_rgba(0,0,0,0.08)]">
+            <div className="h-72 w-full bg-gradient-to-br from-[#dfe6ff] to-[#f4f6ff] md:h-96" />
+            <div className="px-6 py-6 md:px-10 md:py-8">
+              <span className="inline-block rounded bg-[#0E2A7B] px-2 py-0.5 text-[11px] font-semibold text-white">
+                {selectedReview.city} | {selectedReview.type}
+              </span>
+              <h3 className="mt-3 text-2xl font-extrabold text-black md:text-3xl">{selectedReview.title}</h3>
+              <p className="mt-4 whitespace-pre-line text-base leading-relaxed text-gray-700 md:text-lg">
+                {selectedReview.content ||
+                  `${selectedReview.title} 관련 후기를 남겨주셨습니다.\n상담부터 계약까지 친절하고 빠르게 진행되어 만족하셨다는 내용입니다.`}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="w-full px-4 pb-8 md:pb-10">
       <div className="mx-auto w-full max-w-[1220px] rounded-[10px] pt-4 md:pt-6">
@@ -179,16 +269,17 @@ export default function ReviewView() {
 
         <div className="mt-10 grid grid-cols-1 gap-x-10 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:mt-12">
           {pagedReviews.map((review) => (
-            <article key={review.id} className="group">
+            <article
+              key={review.id}
+              onClick={() => setSelectedReview(review)}
+              className="group cursor-pointer"
+            >
               <div className="h-36 w-full rounded-md bg-white shadow-[0_4px_10px_rgba(0,0,0,0.08)] transition-transform duration-300 group-hover:translate-y-[-2px]" />
               <div className="mt-3">
                 <span className="inline-block rounded bg-[#0E2A7B] px-2 py-0.5 text-[11px] font-semibold text-white">
                   {review.city} | {review.type}
                 </span>
                 <p className="mt-1 text-sm font-semibold text-black">{review.title}</p>
-                <p className="text-xs text-gray-600">
-                  차종: {review.car} / 가격: {review.price}
-                </p>
               </div>
             </article>
           ))}

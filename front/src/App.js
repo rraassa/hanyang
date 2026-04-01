@@ -182,6 +182,18 @@ function AppContent() {
     }
   }, [viewMode]);
 
+  useEffect(() => {
+    // 로그인/회원가입 페이지로 이동하면 메인 내부 뷰 상태를 정리
+    if (location.pathname !== "/") {
+      setViewMode(null);
+      setIsAnimating(false);
+      setIsReturning(false);
+      setIsPageTransition(false);
+      setFooterRevealProgress(0);
+      setHeaderState("default");
+    }
+  }, [location.pathname]);
+
   return (
     <div className="bg-[#EBEAF3] min-h-screen font-sans text-gray-900">
       {!isAuthPage && <Header colorType={headerState} onNavigate={handleNavigate} />}
@@ -259,7 +271,7 @@ function AppContent() {
                         <MainCards onNavigate={handleNavigate} />
                       </div>
                       <ReviewSection onViewAll={() => handleNavigate("review")} />
-                      <ListingTable />
+                      <ListingTable onNavigate={handleNavigate} />
                     </div>
                     <InquirySection />
                     <div ref={inquiryTriggerRef} className="h-[0px] invisible pointer-events-none" />

@@ -26,7 +26,7 @@ export default function KakaoCallback() {
         localStorage.setItem('loginType', 'kakao');
         localStorage.setItem('isAdmin', 'false');
 
-        alert('카카오 로그인 성공!');
+        window.dispatchEvent(new Event("auth:changed"));
         navigate('/');
       } catch (error) {
         console.error('카카오 로그인 오류:', error);
