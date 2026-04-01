@@ -1,4 +1,4 @@
-const API_URL = 'https://qi5ftk4b4fuy27kjkmd7eivae40hrftu.lambda-url.ap-northeast-2.on.aws';
+const API_URL = 'https://nlob2ghdyk.execute-api.ap-northeast-2.amazonaws.com';
 
 // 사용자 ID 가져오기
 const getUserId = () => {
