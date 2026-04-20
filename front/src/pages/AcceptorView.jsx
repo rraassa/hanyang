@@ -179,7 +179,7 @@ export default function AcceptorView() {
                 revealStep < 1 ? "translate-y-5 opacity-0" : "translate-y-0 opacity-100"
               }`}
             >
-              {isProcedure ? "간단한 양수 절차& 구비 서류" : "간단한 매수 요건"}
+              {isProcedure ? "간단한 양수 절차" : "간단한 매수 요건"}
             </h3>
 
             {isProcedure ? (
