@@ -183,30 +183,31 @@ export default function AcceptorView() {
             </h3>
 
             {isProcedure ? (
-              <ul className="mt-7 list-disc space-y-4 pl-8 text-base font-semibold text-black md:mt-10 md:text-[20px]">
-                <li
-                  className={`transition-all duration-500 ease-out ${
-                    revealStep < 2 ? "translate-y-5 opacity-0" : "translate-y-0 opacity-100"
-                  }`}
-                >
-                  <p className="font-semibold">자격증 갖추고 5년 경력으로 서울 개인택시 양수시 진행절차</p>
-                  <p
-                    className={`mt-2 text-base font-medium leading-relaxed text-black/80 transition-all duration-500 ease-out md:text-[20px] ${
-                      revealStep < 3 ? "translate-y-5 opacity-0" : "translate-y-0 opacity-100"
+              <>
+                <ul className="mt-7 list-disc space-y-4 pl-8 text-base font-semibold text-black md:mt-10 md:text-[20px]">
+                  <li
+                    className={`transition-all duration-500 ease-out ${
+                      revealStep < 2 ? "translate-y-5 opacity-0" : "translate-y-0 opacity-100"
                     }`}
                   >
-                    양도 양수 허가신청서부터 제출하여 처리가 5일 이내 끝나면서 무사고로 운전한 경우에
-                    모든 계약 후 신규 개인택시 교육 후 종결 단계(인가증) 취득 후 즉시 운행이
-                    순차적으로 진행됩니다.
-                  </p>
-                </li>
-              </ul>
+                    <p className="font-semibold">자격증 갖추고 5년 경력으로 서울 개인택시 양수시 진행절차</p>
+                    <p
+                      className={`mt-2 text-base font-medium leading-relaxed text-black/80 transition-all duration-500 ease-out md:text-[20px] ${
+                        revealStep < 3 ? "translate-y-5 opacity-0" : "translate-y-0 opacity-100"
+                      }`}
+                    >
+                      양도 양수 허가신청서부터 제출하여 처리가 5일 이내 끝나면서 무사고로 운전한 경우에
+                      모든 계약 후 신규 개인택시 교육 후 종결 단계(인가증) 취득 후 즉시 운행이
+                      순차적으로 진행됩니다.
+                    </p>
+                  </li>
+                </ul>
 
-              <div
-                className={`mt-12 text-black transition-all duration-500 ease-out ${
-                  revealStep < 3 ? "translate-y-5 opacity-0" : "translate-y-0 opacity-100"
-                }`}
-              >
+                <div
+                  className={`mt-12 text-black transition-all duration-500 ease-out ${
+                    revealStep < 3 ? "translate-y-5 opacity-0" : "translate-y-0 opacity-100"
+                  }`}
+                >
                 <p
                   className={`text-2xl font-extrabold leading-tight transition-all duration-500 ease-out md:text-[32px] ${
                     revealStep < 3 ? "translate-y-5 opacity-0" : "translate-y-0 opacity-100"
@@ -282,7 +283,8 @@ export default function AcceptorView() {
                     <p>12. 택시 양수교육 수료증 (성남, 상주 택시양수교육센터)</p>
                   </div>
                 </div>
-              </div>
+                </div>
+              </>
             ) : (
               <ol className="mt-7 list-decimal space-y-5 pl-8 text-base leading-relaxed text-black md:mt-10 md:pl-10 md:text-[20px]">
                 {requirementItems.map((item, index) => (
