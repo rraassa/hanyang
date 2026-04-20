@@ -42,7 +42,7 @@ const requirementItems = [
 export default function AcceptorView() {
   const [activeTab, setActiveTab] = useState(TAB_PROCEDURE);
   const isProcedure = activeTab === TAB_PROCEDURE;
-  const searchTargetText = isProcedure ? "양수 절차" : "양수 요건";
+  const searchTargetText = isProcedure ? "양수 절차& 구비 서류" : "양수 요건";
   const [searchTypingIndex, setSearchTypingIndex] = useState(0);
   const [isDeletingSearchText, setIsDeletingSearchText] = useState(false);
   const [revealStep, setRevealStep] = useState(0);
@@ -100,10 +100,15 @@ export default function AcceptorView() {
       if (!isProcedure) {
         if (delta > step3 + 70) nextStep = 4;
         if (delta > step3 + 140) nextStep = 5;
+      } else {
+        if (delta > step3 + 70) nextStep = 4;
+        if (delta > step3 + 140) nextStep = 5;
+        if (delta > step3 + 210) nextStep = 6;
+        if (delta > step3 + 280) nextStep = 7;
       }
 
       if (atBottom) {
-        nextStep = isProcedure ? 3 : 5;
+        nextStep = isProcedure ? 7 : 5;
       }
 
       setRevealStep(nextStep);
@@ -131,7 +136,7 @@ export default function AcceptorView() {
                 : "bg-white text-[#0E2A7B] shadow-[0_4px_12px_rgba(0,0,0,0.12)]"
             }`}
           >
-            양수 절차
+            양수 절차& 구비 서류
           </button>
           <button
             type="button"
@@ -174,7 +179,7 @@ export default function AcceptorView() {
                 revealStep < 1 ? "translate-y-5 opacity-0" : "translate-y-0 opacity-100"
               }`}
             >
-              {isProcedure ? "간단한 매수 절차" : "간단한 매수 요건"}
+              {isProcedure ? "간단한 양수 절차& 구비 서류" : "간단한 매수 요건"}
             </h3>
 
             {isProcedure ? (
@@ -196,6 +201,88 @@ export default function AcceptorView() {
                   </p>
                 </li>
               </ul>
+
+              <div
+                className={`mt-12 text-black transition-all duration-500 ease-out ${
+                  revealStep < 3 ? "translate-y-5 opacity-0" : "translate-y-0 opacity-100"
+                }`}
+              >
+                <p
+                  className={`text-2xl font-extrabold leading-tight transition-all duration-500 ease-out md:text-[32px] ${
+                    revealStep < 3 ? "translate-y-5 opacity-0" : "translate-y-0 opacity-100"
+                  }`}
+                >
+                  개인택시 매수인 구비서류
+                </p>
+
+                <div
+                  className={`mt-6 space-y-5 text-base leading-relaxed transition-all duration-500 ease-out md:text-[20px] ${
+                    revealStep < 3 ? "translate-y-5 opacity-0" : "translate-y-0 opacity-100"
+                  }`}
+                >
+                  <div
+                    className={`transition-all duration-500 ease-out ${
+                      revealStep < 4 ? "translate-y-5 opacity-0" : "translate-y-0 opacity-100"
+                    }`}
+                  >
+                    <p className="font-extrabold">※ 영업용 경력 구비서류</p>
+                    <p>경력증명서 서식 (전국교통과학원 택시조합에서 검증)</p>
+                    <p>회사 법인 인감증명서 (유효기간 3개월)</p>
+                    <p>운전경력증명서 (또는 소속된 근로원천징수 3년이상 발급)</p>
+                    <p>경력관리대장 (원천대조필) 법인택시 6년이상 / 3년이상 2년6월 이상 근무</p>
+                    <p>운전적성정밀검사 (원천대조필 - 퇴직일자 기재요망)</p>
+                  </div>
+
+                  <div
+                    className={`transition-all duration-500 ease-out ${
+                      revealStep < 5 ? "translate-y-5 opacity-0" : "translate-y-0 opacity-100"
+                    }`}
+                  >
+                    <p className="font-extrabold">※ 법인 자가용 경력 구비서류</p>
+                    <p>경력증명서 서식 (전국교통과학원 택시조합에서 검증)</p>
+                    <p>회사 법인 인감증명서</p>
+                    <p>근로계약서 (6년이상 회사서 법인인감 날인)</p>
+                    <p>인사기록카드 (복사해서 법인 인감 날인)</p>
+                    <p>*버스(관광차) 7년에 6년</p>
+                    <p>운행일지 또는 상응하는 대체서류</p>
+                  </div>
+
+                  <div
+                    className={`transition-all duration-500 ease-out ${
+                      revealStep < 6 ? "translate-y-5 opacity-0" : "translate-y-0 opacity-100"
+                    }`}
+                  >
+                    <p className="font-extrabold">※ 개별용달 화물경력 구비서류</p>
+                    <p>경력증명서 (개별용달 협회 발행, 개별화물 가산점 협회 발행)</p>
+                    <p>경력증명서 발급대장 사본 (협회발행)</p>
+                    <p>부가가치세 과세표준증명 (관할 세무서 최근 3년 발행)</p>
+                    <p>국민건강보험 자격득실 확인서 (지역 의료보험 공단으로부터 발행)</p>
+                  </div>
+
+                  <div
+                    className={`transition-all duration-500 ease-out ${
+                      revealStep < 7 ? "translate-y-5 opacity-0" : "translate-y-0 opacity-100"
+                    }`}
+                  >
+                    <p className="font-extrabold">※ 공동 구비서류 (추가경력 관계서류)</p>
+                    <p>1. 운전경력 무사고 증명서 경찰서 (교통사고 전체 경력 발급)</p>
+                    <p>(연하취득일로부터 현재까지) 경찰서 민원실 발급, 유효기간 1개월</p>
+                    <p>2. 운전정밀검사 판정표 (성산동 서부검사장 T. 375-1273 하계동 검사장)</p>
+                    <p>(운전종종 실시로 이상자는 특별검사, 신규검사 받으셔야합니다.)</p>
+                    <p>무사고 운전자 재발급 수수료 1장 1,000원 성산, 노원, 강남, 구로, 성동검사장에서 받으시면 됩니다</p>
+                    <p>3. 운전면허증 사본 1통</p>
+                    <p>4. 택시운전자격증 사본 1통</p>
+                    <p>5. 기본증명서 1통 (구 호적초본) (상세)</p>
+                    <p>6. 인감증명 2통 (6,7,8,9번 동사무소 발행)</p>
+                    <p>7. 주민등록등본 1통</p>
+                    <p>8. 주민등록초본 1통 (처음부터 발급)</p>
+                    <p>9. 사진 (명함판사진 10매) 인가후 개인택시 사진표 제작시 필요함</p>
+                    <p>10. 인감도장 지참</p>
+                    <p>11. 운전 종사자교육 수료증 (사업용 교통문화 교육원)</p>
+                    <p>12. 택시 양수교육 수료증 (성남, 상주 택시양수교육센터)</p>
+                  </div>
+                </div>
+              </div>
             ) : (
               <ol className="mt-7 list-decimal space-y-5 pl-8 text-base leading-relaxed text-black md:mt-10 md:pl-10 md:text-[20px]">
                 {requirementItems.map((item, index) => (
