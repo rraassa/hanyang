@@ -2,10 +2,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const DEFAULT_PRICE_TEXT = "1억1천6백만원";
-const API_BASE_URL =
+const API_URL =
   process.env.REACT_APP_PRICE_API_URL ||
-  process.env.REACT_APP_API_URL ||
-  "https://nlob2ghdyk.execute-api.ap-northeast-2.amazonaws.com";
+  "https://5ee7cm3sytpokhfy2bupy3sgui0xvqbn.lambda-url.ap-northeast-2.on.aws/";
 
 const parseJwtPayload = (token) => {
   if (!token) return null;
@@ -51,33 +50,18 @@ export default function PriceView() {
   const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
 
   const requestPriceApi = async (method = "GET", body) => {
-    const normalizedBase = API_BASE_URL.replace(/\/$/, "");
-    const candidates = [`${normalizedBase}/price`, normalizedBase];
+    const response = await fetch(API_URL, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: body ? JSON.stringify(body) : undefined,
+    });
 
-    let lastError = null;
-
-    for (const url of candidates) {
-      try {
-        const response = await fetch(url, {
-          method,
-          headers: { "Content-Type": "application/json" },
-          body: body ? JSON.stringify(body) : undefined,
-        });
-
-        if (!response.ok) {
-          const text = await response.text();
-          lastError = new Error(text || `${response.status} ${response.statusText}`);
-          continue;
-        }
-
-        const payload = await response.json();
-        return payload;
-      } catch (error) {
-        lastError = error;
-      }
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(text || `${response.status} ${response.statusText}`);
     }
 
-    throw lastError || new Error("시세 API 요청 실패");
+    return response.json();
   };
 
   // 가격 조회
