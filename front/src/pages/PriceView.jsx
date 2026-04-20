@@ -2,7 +2,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const DEFAULT_PRICE_TEXT = "1억1천6백만원";
-const API_URL = "https://5ee7cm3sytpokhfy2bupy3sgui0xvqbn.lambda-url.ap-northeast-2.on.aws/";
+const API_BASE_URL =
+  process.env.REACT_APP_PRICE_API_URL ||
+  process.env.REACT_APP_API_URL ||
+  "https://nlob2ghdyk.execute-api.ap-northeast-2.amazonaws.com";
 
 const parseJwtPayload = (token) => {
   if (!token) return null;
@@ -47,6 +50,36 @@ export default function PriceView() {
   const isAdmin = useMemo(() => checkIsAdminUser(), []);
   const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
 
+  const requestPriceApi = async (method = "GET", body) => {
+    const normalizedBase = API_BASE_URL.replace(/\/$/, "");
+    const candidates = [`${normalizedBase}/price`, normalizedBase];
+
+    let lastError = null;
+
+    for (const url of candidates) {
+      try {
+        const response = await fetch(url, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: body ? JSON.stringify(body) : undefined,
+        });
+
+        if (!response.ok) {
+          const text = await response.text();
+          lastError = new Error(text || `${response.status} ${response.statusText}`);
+          continue;
+        }
+
+        const payload = await response.json();
+        return payload;
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    throw lastError || new Error("시세 API 요청 실패");
+  };
+
   // 가격 조회
   useEffect(() => {
     if (!isLoggedIn) {
@@ -58,13 +91,12 @@ export default function PriceView() {
       return;
     }
 
-    fetch(API_URL)
-      .then(res => res.json())
-      .then(data => {
-        setPriceText(data.currentPrice || DEFAULT_PRICE_TEXT);
+    requestPriceApi("GET")
+      .then((data) => {
+        setPriceText(data.currentPrice || data?.data?.currentPrice || DEFAULT_PRICE_TEXT);
         setLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error("가격 조회 실패:", err);
         setPriceText(DEFAULT_PRICE_TEXT);
         setLoading(false);
@@ -86,24 +118,16 @@ export default function PriceView() {
 
     setLoading(true);
     try {
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const result = await requestPriceApi("POST", {
           price: nextPrice,
           updatedBy: localStorage.getItem("displayName") || "admin"
-        })
       });
-
-      if (!response.ok) throw new Error("업데이트 실패");
-
-      const result = await response.json();
-      setPriceText(result.data.currentPrice);
+      setPriceText(result.currentPrice || result?.data?.currentPrice || nextPrice);
       setIsEditingPrice(false);
       alert("가격이 업데이트되었습니다.");
     } catch (error) {
       console.error("가격 업데이트 실패:", error);
-      alert("가격 업데이트에 실패했습니다.");
+      alert(`가격 업데이트에 실패했습니다.\n${error.message || ""}`);
     } finally {
       setLoading(false);
     }
