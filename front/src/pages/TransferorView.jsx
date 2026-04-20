@@ -90,10 +90,16 @@ export default function TransferorView() {
       if (isDocuments) {
         if (delta > step3 + 70) nextStep = 4;
         if (delta > step3 + 140) nextStep = 5;
+      } else {
+        // 매도 절차 & 구비서류 탭은 구비서류 블록을 단계별로 노출
+        if (delta > step3 + 70) nextStep = 4;
+        if (delta > step3 + 140) nextStep = 5;
+        if (delta > step3 + 210) nextStep = 6;
+        if (delta > step3 + 280) nextStep = 7;
       }
 
       if (atBottom) {
-        nextStep = isDocuments ? 5 : 3;
+        nextStep = isDocuments ? 5 : 7;
       }
 
       setRevealStep(nextStep);
@@ -187,11 +193,29 @@ export default function TransferorView() {
                   ))}
                 </ol>
 
-                <div className="mt-12 text-black">
-                  <p className="text-2xl font-extrabold leading-tight md:text-[32px]">개인택시 매수인 구비서류</p>
+                <div
+                  className={`mt-12 text-black transition-all duration-500 ease-out ${
+                    revealStep < 3 ? "translate-y-5 opacity-0" : "translate-y-0 opacity-100"
+                  }`}
+                >
+                  <p
+                    className={`text-2xl font-extrabold leading-tight transition-all duration-500 ease-out md:text-[32px] ${
+                      revealStep < 3 ? "translate-y-5 opacity-0" : "translate-y-0 opacity-100"
+                    }`}
+                  >
+                    개인택시 매수인 구비서류
+                  </p>
 
-                  <div className="mt-6 space-y-5 text-base leading-relaxed md:text-[20px]">
-                    <div>
+                  <div
+                    className={`mt-6 space-y-5 text-base leading-relaxed transition-all duration-500 ease-out md:text-[20px] ${
+                      revealStep < 3 ? "translate-y-5 opacity-0" : "translate-y-0 opacity-100"
+                    }`}
+                  >
+                    <div
+                      className={`transition-all duration-500 ease-out ${
+                        revealStep < 4 ? "translate-y-5 opacity-0" : "translate-y-0 opacity-100"
+                      }`}
+                    >
                       <p className="font-extrabold">※ 영업용 경력 구비서류</p>
                       <p>경력증명서 서식 (전국교통과학원 택시조합에서 검증)</p>
                       <p>회사 법인 인감증명서 (유효기간 3개월)</p>
@@ -200,7 +224,11 @@ export default function TransferorView() {
                       <p>운전적성정밀검사 (원천대조필 - 퇴직일자 기재요망)</p>
                     </div>
 
-                    <div>
+                    <div
+                      className={`transition-all duration-500 ease-out ${
+                        revealStep < 5 ? "translate-y-5 opacity-0" : "translate-y-0 opacity-100"
+                      }`}
+                    >
                       <p className="font-extrabold">※ 법인 자가용 경력 구비서류</p>
                       <p>경력증명서 서식 (전국교통과학원 택시조합에서 검증)</p>
                       <p>회사 법인 인감증명서</p>
@@ -210,7 +238,11 @@ export default function TransferorView() {
                       <p>운행일지 또는 상응하는 대체서류</p>
                     </div>
 
-                    <div>
+                    <div
+                      className={`transition-all duration-500 ease-out ${
+                        revealStep < 6 ? "translate-y-5 opacity-0" : "translate-y-0 opacity-100"
+                      }`}
+                    >
                       <p className="font-extrabold">※ 개별용달 화물경력 구비서류</p>
                       <p>경력증명서 (개별용달 협회 발행, 개별화물 가산점 협회 발행)</p>
                       <p>경력증명서 발급대장 사본 (협회발행)</p>
@@ -218,7 +250,11 @@ export default function TransferorView() {
                       <p>국민건강보험 자격득실 확인서 (지역 의료보험 공단으로부터 발행)</p>
                     </div>
 
-                    <div>
+                    <div
+                      className={`transition-all duration-500 ease-out ${
+                        revealStep < 7 ? "translate-y-5 opacity-0" : "translate-y-0 opacity-100"
+                      }`}
+                    >
                       <p className="font-extrabold">※ 공동 구비서류 (추가경력 관계서류)</p>
                       <p>1. 운전경력 무사고 증명서 경찰서 (교통사고 전체 경력 발급)</p>
                       <p>(연하취득일로부터 현재까지) 경찰서 민원실 발급, 유효기간 1개월</p>
