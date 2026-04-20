@@ -56,14 +56,14 @@ export const getMyReviews = async () => {
 };
 
 // 후기 작성
-export const createReview = async (title, content, city = '서울', type = '후기') => {
+export const createReview = async (title, content, city = '서울', type = '후기', imageUrl = '') => {
   const userId = getCurrentUserId();
   if (!userId) throw new Error('로그인이 필요합니다');
   
   const response = await fetch(`${API_URL}/reviews`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId, title, content, city, type })
+    body: JSON.stringify({ userId, title, content, city, type, imageUrl })
   });
 
   const data = await response.json();

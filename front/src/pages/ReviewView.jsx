@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   getAllReviews,
@@ -19,6 +19,7 @@ export default function ReviewView() {
   const [isWritePageOpen, setIsWritePageOpen] = useState(false);
   const [draftTitle, setDraftTitle] = useState("");
   const [draftContent, setDraftContent] = useState("");
+  const [draftImageUrl, setDraftImageUrl] = useState("");
   const [selectedReview, setSelectedReview] = useState(null);
   const [isEditingSelected, setIsEditingSelected] = useState(false);
   const [editTitle, setEditTitle] = useState("");
@@ -30,12 +31,7 @@ export default function ReviewView() {
   const currentUserId = getCurrentUserId();
   const adminUser = isAdminUser();
 
-  // 후기 로드
-  useEffect(() => {
-    loadReviews();
-  }, []);
-
-  const loadReviews = async () => {
+  const loadReviews = useCallback(async () => {
     setLoading(true);
     try {
       const all = await getAllReviews();
@@ -54,7 +50,12 @@ export default function ReviewView() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isLoggedIn]);
+
+  // 후기 로드
+  useEffect(() => {
+    loadReviews();
+  }, [loadReviews]);
 
   const handleTabChange = (tab) => {
     if (tab === "mine" && !isLoggedIn) {
@@ -73,10 +74,11 @@ export default function ReviewView() {
     }
 
     try {
-      await createReview(draftTitle.trim(), draftContent.trim());
+      await createReview(draftTitle.trim(), draftContent.trim(), "서울", "후기", draftImageUrl);
       alert("후기가 작성되었습니다!");
       setDraftTitle("");
       setDraftContent("");
+      setDraftImageUrl("");
       setIsWritePageOpen(false);
       setActiveTab("mine");
       await loadReviews();
@@ -92,6 +94,25 @@ export default function ReviewView() {
       return;
     }
     setIsWritePageOpen(true);
+  };
+
+  const handlePickImage = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("이미지 파일만 첨부할 수 있습니다.");
+      event.target.value = "";
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        setDraftImageUrl(reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleOpenReviewDetail = (review) => {
@@ -177,6 +198,25 @@ export default function ReviewView() {
             className="mt-3 h-12 w-full rounded-xl border border-[#efefef] bg-white px-4 text-base outline-none shadow-[0_4px_10px_rgba(0,0,0,0.06)] focus:border-[#0E2A7B]"
           />
 
+          <div className="mt-6">
+            <label className="block text-lg font-bold text-black md:text-xl">첨부파일</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handlePickImage}
+              className="mt-3 block w-full text-sm text-gray-700 file:mr-4 file:rounded-lg file:border-0 file:bg-[#0E2A7B] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-[#0b2367]"
+            />
+            {draftImageUrl && (
+              <div className="mt-4 overflow-hidden rounded-xl border border-[#e5e5e5] bg-white">
+                <img
+                  src={draftImageUrl}
+                  alt="첨부 미리보기"
+                  className="h-48 w-full object-cover md:h-64"
+                />
+              </div>
+            )}
+          </div>
+
           <div className="mt-8">
             <label className="block text-2xl font-bold text-black">내용</label>
           </div>
@@ -223,7 +263,15 @@ export default function ReviewView() {
           </div>
 
           <div className="overflow-hidden rounded-xl border border-[#E7E7E7] bg-[#fafaf5] shadow-[0_6px_20px_rgba(0,0,0,0.08)]">
-            <div className="h-72 w-full bg-gradient-to-br from-[#dfe6ff] to-[#f4f6ff] md:h-96" />
+            <div className="h-72 w-full bg-gradient-to-br from-[#dfe6ff] to-[#f4f6ff] md:h-96">
+              {selectedReview.imageUrl && (
+                <img
+                  src={selectedReview.imageUrl}
+                  alt="후기 이미지"
+                  className="h-full w-full object-cover"
+                />
+              )}
+            </div>
             <div className="px-6 py-6 md:px-10 md:py-8">
               <span className="inline-block rounded bg-[#0E2A7B] px-2 py-0.5 text-[11px] font-semibold text-white">
                 {selectedReview.city} | {selectedReview.type}
@@ -351,7 +399,16 @@ export default function ReviewView() {
               onClick={() => handleOpenReviewDetail(review)}
               className="group cursor-pointer"
             >
-              <div className="h-36 w-full rounded-md bg-white shadow-[0_4px_10px_rgba(0,0,0,0.08)] transition-transform duration-300 group-hover:translate-y-[-2px]" />
+              {review.imageUrl && (
+                <img
+                  src={review.imageUrl}
+                  alt="후기 이미지"
+                  className="h-36 w-full rounded-md object-cover shadow-[0_4px_10px_rgba(0,0,0,0.08)] transition-transform duration-300 group-hover:translate-y-[-2px]"
+                />
+              )}
+              {!review.imageUrl && (
+                <div className="h-36 w-full rounded-md bg-white shadow-[0_4px_10px_rgba(0,0,0,0.08)] transition-transform duration-300 group-hover:translate-y-[-2px]" />
+              )}
               <div className="mt-3">
                 <span className="inline-block rounded bg-[#0E2A7B] px-2 py-0.5 text-[11px] font-semibold text-white">
                   {review.city} | {review.type}
