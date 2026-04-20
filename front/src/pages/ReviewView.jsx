@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAllReviews, getMyReviews, createReview } from "../lib/reviewApi";
+import {
+  getAllReviews,
+  getMyReviews,
+  createReview,
+  deleteReview,
+  updateReview,
+  getCurrentUserId,
+  isAdminUser,
+} from "../lib/reviewApi";
 
 export default function ReviewView() {
   const navigate = useNavigate();
@@ -12,10 +20,15 @@ export default function ReviewView() {
   const [draftTitle, setDraftTitle] = useState("");
   const [draftContent, setDraftContent] = useState("");
   const [selectedReview, setSelectedReview] = useState(null);
+  const [isEditingSelected, setIsEditingSelected] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editContent, setEditContent] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 12;
 
   const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+  const currentUserId = getCurrentUserId();
+  const adminUser = isAdminUser();
 
   // 후기 로드
   useEffect(() => {
@@ -79,6 +92,59 @@ export default function ReviewView() {
       return;
     }
     setIsWritePageOpen(true);
+  };
+
+  const handleOpenReviewDetail = (review) => {
+    setSelectedReview(review);
+    setIsEditingSelected(false);
+    setEditTitle(review.title || "");
+    setEditContent(review.content || "");
+  };
+
+  const canEditReview = (review) => {
+    return isLoggedIn && review?.userId === currentUserId;
+  };
+
+  const canDeleteReview = (review) => {
+    if (!isLoggedIn) return false;
+    if (adminUser) return true;
+    return review?.userId === currentUserId;
+  };
+
+  const handleDeleteSelectedReview = async () => {
+    if (!selectedReview) return;
+    if (!window.confirm("후기를 삭제하시겠습니까?")) return;
+
+    try {
+      await deleteReview(selectedReview.reviewId, selectedReview.userId);
+      alert("후기가 삭제되었습니다.");
+      setSelectedReview(null);
+      await loadReviews();
+    } catch (error) {
+      alert(error.message || "후기 삭제에 실패했습니다.");
+    }
+  };
+
+  const handleUpdateSelectedReview = async () => {
+    if (!selectedReview) return;
+    if (!editTitle.trim() || !editContent.trim()) {
+      alert("제목과 내용을 모두 입력해 주세요.");
+      return;
+    }
+
+    try {
+      const updated = await updateReview(
+        selectedReview.reviewId,
+        editTitle.trim(),
+        editContent.trim()
+      );
+      setSelectedReview(updated || { ...selectedReview, title: editTitle.trim(), content: editContent.trim() });
+      setIsEditingSelected(false);
+      alert("후기가 수정되었습니다.");
+      await loadReviews();
+    } catch (error) {
+      alert(error.message || "후기 수정에 실패했습니다.");
+    }
   };
 
   const displayReviews = activeTab === "mine" ? myReviews : allReviews;
@@ -162,13 +228,73 @@ export default function ReviewView() {
               <span className="inline-block rounded bg-[#0E2A7B] px-2 py-0.5 text-[11px] font-semibold text-white">
                 {selectedReview.city} | {selectedReview.type}
               </span>
-              <h3 className="mt-3 text-2xl font-extrabold text-black md:text-3xl">{selectedReview.title}</h3>
-              <p className="mt-4 whitespace-pre-line text-base leading-relaxed text-gray-700 md:text-lg">
-                {selectedReview.content}
-              </p>
+              {isEditingSelected ? (
+                <div className="mt-3 space-y-3">
+                  <input
+                    type="text"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    className="h-12 w-full rounded-xl border border-[#efefef] bg-white px-4 text-xl font-extrabold text-black outline-none focus:border-[#0E2A7B] md:text-2xl"
+                  />
+                  <textarea
+                    value={editContent}
+                    onChange={(e) => setEditContent(e.target.value)}
+                    className="min-h-[180px] w-full resize-y rounded-xl border border-[#efefef] bg-white p-4 text-base leading-relaxed text-gray-700 outline-none focus:border-[#0E2A7B] md:text-lg"
+                  />
+                </div>
+              ) : (
+                <>
+                  <h3 className="mt-3 text-2xl font-extrabold text-black md:text-3xl">{selectedReview.title}</h3>
+                  <p className="mt-4 whitespace-pre-line text-base leading-relaxed text-gray-700 md:text-lg">
+                    {selectedReview.content}
+                  </p>
+                </>
+              )}
               <p className="mt-4 text-sm text-gray-500">
                 작성일: {new Date(selectedReview.createdAt).toLocaleDateString('ko-KR')}
               </p>
+              <div className="mt-4 flex items-center gap-2">
+                {canEditReview(selectedReview) && !isEditingSelected && (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingSelected(true)}
+                    className="rounded-md bg-[#0E2A7B] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#0b2367]"
+                  >
+                    수정
+                  </button>
+                )}
+                {canEditReview(selectedReview) && isEditingSelected && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleUpdateSelectedReview}
+                      className="rounded-md bg-[#0E2A7B] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#0b2367]"
+                    >
+                      수정 완료
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsEditingSelected(false);
+                        setEditTitle(selectedReview.title || "");
+                        setEditContent(selectedReview.content || "");
+                      }}
+                      className="rounded-md bg-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-300"
+                    >
+                      취소
+                    </button>
+                  </>
+                )}
+                {canDeleteReview(selectedReview) && (
+                  <button
+                    type="button"
+                    onClick={handleDeleteSelectedReview}
+                    className="rounded-md bg-red-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-600"
+                  >
+                    삭제
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -222,7 +348,7 @@ export default function ReviewView() {
           {pagedReviews.map((review) => (
             <article
               key={review.reviewId}
-              onClick={() => setSelectedReview(review)}
+              onClick={() => handleOpenReviewDetail(review)}
               className="group cursor-pointer"
             >
               <div className="h-36 w-full rounded-md bg-white shadow-[0_4px_10px_rgba(0,0,0,0.08)] transition-transform duration-300 group-hover:translate-y-[-2px]" />
