@@ -3,6 +3,7 @@ import {
   Routes,
   Route,
   useLocation,
+  useNavigate,
 } from "react-router-dom";
 import { useRef, useState, useEffect } from "react";
 
@@ -24,7 +25,9 @@ import ReviewView from "./pages/ReviewView";
 
 function AppContent() {
   const location = useLocation();
+  const navigate = useNavigate();
   const isAuthPage = ["/login", "/signup"].includes(location.pathname);
+  const hasAutoLoggedOutRef = useRef(false);
 
   const [headerState, setHeaderState] = useState("default");
   const [hasScrolledOnce, setHasScrolledOnce] = useState(false);
@@ -194,6 +197,53 @@ function AppContent() {
     }
   }, [location.pathname]);
 
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+    if (!isLoggedIn) return;
+
+    const isAdmin = localStorage.getItem("isAdmin") === "true";
+    const IDLE_TIMEOUT_MS = isAdmin ? 1000 * 60 * 15 : 1000 * 60 * 30; // 관리자 15분, 일반 30분
+    const activityEvents = ["mousemove", "keydown", "click", "scroll", "touchstart"];
+    let idleTimer = null;
+
+    hasAutoLoggedOutRef.current = false;
+
+    const logoutByInactivity = () => {
+      if (hasAutoLoggedOutRef.current) return;
+      hasAutoLoggedOutRef.current = true;
+
+      localStorage.removeItem("isLoggedIn");
+      localStorage.removeItem("displayName");
+      localStorage.removeItem("nickname");
+      localStorage.removeItem("isAdmin");
+      localStorage.removeItem("idToken");
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("kakaoId");
+      localStorage.removeItem("loginType");
+      window.dispatchEvent(new Event("auth:changed"));
+      alert("오랫동안 활동이 없어 자동 로그아웃되었습니다.");
+      navigate("/login");
+    };
+
+    const resetIdleTimer = () => {
+      if (idleTimer) clearTimeout(idleTimer);
+      idleTimer = setTimeout(logoutByInactivity, IDLE_TIMEOUT_MS);
+    };
+
+    resetIdleTimer();
+    activityEvents.forEach((eventName) =>
+      window.addEventListener(eventName, resetIdleTimer, { passive: true })
+    );
+
+    return () => {
+      if (idleTimer) clearTimeout(idleTimer);
+      activityEvents.forEach((eventName) =>
+        window.removeEventListener(eventName, resetIdleTimer)
+      );
+    };
+  }, [location.pathname, navigate]);
+
   return (
     <div className="bg-[#EBEAF3] min-h-screen font-sans text-gray-900">
       {!isAuthPage && <Header colorType={headerState} onNavigate={handleNavigate} />}
@@ -273,7 +323,7 @@ function AppContent() {
                       <ReviewSection onViewAll={() => handleNavigate("review")} />
                       <ListingTable onNavigate={handleNavigate} />
                     </div>
-                    <InquirySection />
+                    <InquirySection onNavigate={handleNavigate} />
                     <div ref={inquiryTriggerRef} className="h-[0px] invisible pointer-events-none" />
                   </div>
                 )}

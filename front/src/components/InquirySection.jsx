@@ -1,4 +1,16 @@
-export default function InquirySection() {
+import { useNavigate } from "react-router-dom";
+
+export default function InquirySection({ onNavigate }) {
+  const navigate = useNavigate();
+
+  const handleNavigate = (mode) => {
+    if (typeof onNavigate === "function") {
+      onNavigate(mode);
+      return;
+    }
+    navigate("/");
+  };
+
   return (
     <section className="bg-[#f4f4fa] py-20 md:py-48 px-4 md:px-8 relative">
       <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-gray-300/40 to-transparent pointer-events-none"></div>
@@ -11,10 +23,18 @@ export default function InquirySection() {
           <h2 className="text-3xl md:text-5xl font-extrabold text-black mb-4 md:mb-6">문의하기</h2>
           <p className="text-base md:text-xl text-gray-700 mb-7 md:mb-10">궁금한 점이 있으시면 언제든지 문의 주세요!</p>
           <div className="flex flex-col md:flex-row gap-6 justify-center md:justify-start">
-            <button className="bg-[#0E2A7B] text-white text-base md:text-lg px-6 md:px-8 py-3 md:py-4 rounded-xl shadow-xl hover:bg-[#0b235f] transition">
-              내가 할 문의
+            <button
+              type="button"
+              onClick={() => handleNavigate("inquiry")}
+              className="bg-[#0E2A7B] text-white text-base md:text-lg px-6 md:px-8 py-3 md:py-4 rounded-xl shadow-xl hover:bg-[#0b235f] transition"
+            >
+              내가 한 문의
             </button>
-            <button className="border-2 border-black text-black text-base md:text-lg px-6 md:px-8 py-3 md:py-4 rounded-xl hover:bg-gray-100 transition">
+            <button
+              type="button"
+              onClick={() => handleNavigate("inquiry")}
+              className="border-2 border-black text-black text-base md:text-lg px-6 md:px-8 py-3 md:py-4 rounded-xl hover:bg-gray-100 transition"
+            >
               문의 하기
             </button>
           </div>
