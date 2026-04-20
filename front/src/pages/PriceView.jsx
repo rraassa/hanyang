@@ -71,7 +71,7 @@ export default function PriceView() {
         hasAlertedLoginRef.current = true;
         alert("개인택시 시세는 로그인 후 확인할 수 있습니다.");
       }
-      navigate("/login");
+      navigate("/login", { replace: true });
       return;
     }
 

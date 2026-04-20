@@ -241,7 +241,7 @@ export default function ListingBox({ onNavigate }) {
                         e.stopPropagation();
                         if (!isLoggedIn) {
                           window.alert("문의하기는 로그인 후 이용할 수 있습니다.");
-                          navigate("/login");
+                          navigate("/login", { replace: true });
                           return;
                         }
                         onNavigate?.("inquiry");

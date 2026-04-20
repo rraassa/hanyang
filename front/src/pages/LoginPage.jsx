@@ -36,7 +36,7 @@ export default function LoginPage() {
       }
       
       window.dispatchEvent(new Event("auth:changed"));
-      navigate("/");
+      navigate("/", { replace: true });
     } catch (err) {
       console.error("로그인 오류:", err);
       alert(err.message || "로그인 실패!");

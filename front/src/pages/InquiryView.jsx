@@ -8,7 +8,7 @@ export default function InquiryView() {
   useEffect(() => {
     if (!isLoggedIn) {
       alert("문의하기는 로그인 후 이용할 수 있습니다.");
-      navigate("/login");
+      navigate("/login", { replace: true });
     }
   }, [isLoggedIn, navigate]);
 

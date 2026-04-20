@@ -1,6 +1,34 @@
 import { useEffect, useMemo, useState } from "react";
 import { getAllReviews } from "../lib/reviewApi";
 
+const REVIEW_IMAGE_BUCKET = process.env.REACT_APP_REVIEW_S3_BUCKET || "hanyang-taxi-data";
+const REVIEW_IMAGE_REGION = process.env.REACT_APP_REVIEW_S3_REGION || "ap-northeast-2";
+
+const toAbsoluteReviewImageUrl = (value) => {
+  if (!value) return "";
+  const src = String(value).trim();
+  if (!src) return "";
+  if (src.startsWith("data:image/")) return src;
+  if (src.startsWith("http://") || src.startsWith("https://")) return src;
+  if (src.startsWith("data/reviews/")) {
+    return `https://${REVIEW_IMAGE_BUCKET}.s3.${REVIEW_IMAGE_REGION}.amazonaws.com/${src}`;
+  }
+  return src;
+};
+
+const getReviewImageSource = (review) => {
+  if (!review) return "";
+  return toAbsoluteReviewImageUrl(
+    review.imageUrl ||
+    review.imageURL ||
+    review.image ||
+    review.photoUrl ||
+    review.photoURL ||
+    review.attachmentUrl ||
+    review.fileUrl
+  );
+};
+
 export default function SlidingReviewSection({ onViewAll }) {
   const [reviews, setReviews] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -91,9 +119,9 @@ export default function SlidingReviewSection({ onViewAll }) {
               >
                 <div className="bg-[#FAFAF5] rounded-xl p-4 transition-shadow">
                   <div className="w-full h-40 rounded-lg mb-4 border border-gray-200 overflow-hidden transform transition-transform duration-300 hover:scale-105 bg-white">
-                    {review.imageUrl ? (
+                    {getReviewImageSource(review) ? (
                       <img
-                        src={review.imageUrl}
+                        src={getReviewImageSource(review)}
                         alt="거래 후기 이미지"
                         className="h-full w-full object-cover"
                       />

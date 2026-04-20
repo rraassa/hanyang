@@ -10,6 +10,39 @@ import {
   isAdminUser,
 } from "../lib/reviewApi";
 
+const REVIEW_IMAGE_BUCKET = process.env.REACT_APP_REVIEW_S3_BUCKET || "hanyang-taxi-data";
+const REVIEW_IMAGE_REGION = process.env.REACT_APP_REVIEW_S3_REGION || "ap-northeast-2";
+
+const toAbsoluteReviewImageUrl = (value) => {
+  if (!value) return "";
+  const src = String(value).trim();
+  if (!src) return "";
+  if (src.startsWith("data:image/")) return src;
+  if (src.startsWith("http://") || src.startsWith("https://")) return src;
+  if (src.startsWith("data/reviews/")) {
+    return `https://${REVIEW_IMAGE_BUCKET}.s3.${REVIEW_IMAGE_REGION}.amazonaws.com/${src}`;
+  }
+  return src;
+};
+
+const getReviewImageSource = (review) => {
+  if (!review) return "";
+  return toAbsoluteReviewImageUrl(
+    review.imageUrl ||
+    review.imageURL ||
+    review.image ||
+    review.photoUrl ||
+    review.photoURL ||
+    review.attachmentUrl ||
+    review.fileUrl
+  );
+};
+
+const normalizeReviewImage = (review) => ({
+  ...review,
+  imageUrl: getReviewImageSource(review),
+});
+
 export default function ReviewView() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("all");
@@ -35,12 +68,12 @@ export default function ReviewView() {
     setLoading(true);
     try {
       const all = await getAllReviews();
-      setAllReviews(all);
+      setAllReviews((all || []).map(normalizeReviewImage));
       
       if (isLoggedIn) {
         try {
           const my = await getMyReviews();
-          setMyReviews(my);
+          setMyReviews((my || []).map(normalizeReviewImage));
         } catch (e) {
           console.error("내 후기 로드 실패:", e);
         }
@@ -60,7 +93,7 @@ export default function ReviewView() {
   const handleTabChange = (tab) => {
     if (tab === "mine" && !isLoggedIn) {
       alert("내 후기는 로그인 후 확인할 수 있습니다.");
-      navigate("/login");
+      navigate("/login", { replace: true });
       return;
     }
     setActiveTab(tab);
@@ -90,7 +123,7 @@ export default function ReviewView() {
   const handleOpenWritePage = () => {
     if (!isLoggedIn) {
       alert("후기 작성은 로그인 후 이용할 수 있습니다.");
-      navigate("/login");
+      navigate("/login", { replace: true });
       return;
     }
     setIsWritePageOpen(true);
@@ -264,9 +297,9 @@ export default function ReviewView() {
 
           <div className="overflow-hidden rounded-xl border border-[#E7E7E7] bg-[#fafaf5] shadow-[0_6px_20px_rgba(0,0,0,0.08)]">
             <div className="h-72 w-full bg-gradient-to-br from-[#dfe6ff] to-[#f4f6ff] md:h-96">
-              {selectedReview.imageUrl && (
+              {getReviewImageSource(selectedReview) && (
                 <img
-                  src={selectedReview.imageUrl}
+                  src={getReviewImageSource(selectedReview)}
                   alt="후기 이미지"
                   className="h-full w-full object-cover"
                 />
@@ -399,14 +432,14 @@ export default function ReviewView() {
               onClick={() => handleOpenReviewDetail(review)}
               className="group cursor-pointer"
             >
-              {review.imageUrl && (
+              {getReviewImageSource(review) && (
                 <img
-                  src={review.imageUrl}
+                  src={getReviewImageSource(review)}
                   alt="후기 이미지"
                   className="h-36 w-full rounded-md object-cover shadow-[0_4px_10px_rgba(0,0,0,0.08)] transition-transform duration-300 group-hover:translate-y-[-2px]"
                 />
               )}
-              {!review.imageUrl && (
+              {!getReviewImageSource(review) && (
                 <div className="h-36 w-full rounded-md bg-white shadow-[0_4px_10px_rgba(0,0,0,0.08)] transition-transform duration-300 group-hover:translate-y-[-2px]" />
               )}
               <div className="mt-3">
