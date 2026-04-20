@@ -54,12 +54,18 @@ export default function Header({ colorType, onNavigate }) {
     <header className={`fixed top-0 w-full z-50 ${bgColor} shadow-md transition-colors duration-300`}>
       <div className="flex flex-col gap-3 px-4 py-3 md:flex-row md:items-center md:justify-between md:px-10 md:py-5">
         <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row md:items-center md:gap-10">
-          <div 
-            className={`text-xl md:text-2xl font-bold ${textColor} cursor-pointer hover:opacity-80 transition-opacity duration-200`}
+          <button
+            type="button"
+            className="cursor-pointer transition-opacity duration-200 hover:opacity-80"
             onClick={() => onNavigate("home")}
+            aria-label="메인페이지로 이동"
           >
-            한양상사
-          </div>
+            <img
+              src="/logo.png"
+              alt="한양상사 로고"
+              className="h-8 w-auto md:h-10"
+            />
+          </button>
 
           <nav className="scrollbar-hide flex gap-4 overflow-x-auto whitespace-nowrap text-xs font-semibold md:space-x-8 md:gap-0 md:text-[15px]">
             {menuItems.map(({ label, mode }, idx) => (
