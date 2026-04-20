@@ -23,6 +23,8 @@ import PriceView from "./pages/PriceView";
 import InquiryView from "./pages/InquiryView";
 import ReviewView from "./pages/ReviewView";
 
+const VIEW_MODES = new Set(["transferor", "acceptor", "price", "inquiry", "review"]);
+
 function AppContent() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -138,6 +140,9 @@ function AppContent() {
     );
 
     if (mode === "home") {
+      if (viewMode) {
+        window.history.pushState({ viewMode: null }, "", window.location.pathname);
+      }
       console.log("[Front] Starting return animation");
       setIsReturning(true);
       setIsAnimating(true); // 반대로 내려가게 하기 위해 추가
@@ -155,6 +160,12 @@ function AppContent() {
       }, 700);
       return;
     }
+
+    if (!VIEW_MODES.has(mode)) return;
+
+    if (mode === viewMode) return;
+
+    window.history.pushState({ viewMode: mode }, "", window.location.pathname);
 
     // 메인페이지에서 다른 페이지로 이동하는 경우
     if (!viewMode) {
@@ -184,6 +195,42 @@ function AppContent() {
       setHeaderState("default");
     }
   }, [viewMode]);
+
+  useEffect(() => {
+    if (location.pathname !== "/") return;
+
+    const stateMode = window.history.state?.viewMode;
+    const normalizedMode = VIEW_MODES.has(stateMode) ? stateMode : null;
+    window.history.replaceState({ viewMode: normalizedMode }, "", window.location.pathname);
+
+    if (normalizedMode !== viewMode) {
+      setViewMode(normalizedMode);
+      setIsAnimating(false);
+      setIsReturning(false);
+      setIsPageTransition(false);
+      if (!normalizedMode) {
+        setHasScrolledOnce(false);
+        setHeaderState("default");
+      }
+    }
+
+    const handlePopState = (event) => {
+      const nextMode = VIEW_MODES.has(event.state?.viewMode) ? event.state.viewMode : null;
+      setViewMode(nextMode);
+      setIsAnimating(false);
+      setIsReturning(false);
+      setIsPageTransition(false);
+
+      if (!nextMode) {
+        setHasScrolledOnce(false);
+        setHeaderState("default");
+        window.scrollTo({ top: 0, behavior: "auto" });
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [location.pathname, viewMode]);
 
   useEffect(() => {
     // 로그인/회원가입 페이지로 이동하면 메인 내부 뷰 상태를 정리

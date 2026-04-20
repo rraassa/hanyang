@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Label } from '../components/ui/Label';
@@ -19,6 +19,12 @@ export default function SignupPage() {
   const [codeSent, setCodeSent] = useState(false);
   const [emailVerified, setEmailVerified] = useState(false);
   const [signupRequested, setSignupRequested] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem("isLoggedIn") === "true") {
+      navigate("/", { replace: true });
+    }
+  }, [navigate]);
 
   const validateBeforeSendCode = () => {
     if (!nickname.trim() || !email.trim() || !password || !confirmPassword) {
