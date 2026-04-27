@@ -1,7 +1,9 @@
-const API_URL =
+const BASE_API_URL =
   process.env.REACT_APP_LISTING_API_URL ||
   process.env.REACT_APP_API_URL ||
-  "https://nlob2ghdyk.execute-api.ap-northeast-2.amazonaws.com";
+  "https://s7mxjqae5k3uol4wqy3dglqrjy0wbats.lambda-url.ap-northeast-2.on.aws/";
+
+const API_URL = BASE_API_URL.replace(/\/+$/, "");
 
 const requestJson = async (path, options = {}) => {
   const response = await fetch(`${API_URL}${path}`, options);
