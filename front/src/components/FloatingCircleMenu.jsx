@@ -46,7 +46,7 @@ export default function FloatingCircleMenu({ onNavigateDirections }) {
   return (
     <div
       className="pointer-events-auto fixed right-3 z-40 flex flex-col items-center gap-3 md:right-5 md:gap-4"
-      style={{ top: "50%", transform: "translateY(-50%)" }}
+      style={{ bottom: "2rem" }}
       role="navigation"
       aria-label="빠른 연락"
     >

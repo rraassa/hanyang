@@ -120,7 +120,6 @@ export default function DirectionsView() {
         <h1 className="text-center text-2xl font-extrabold tracking-tight text-black md:text-3xl">
           오시는 길
         </h1>
-        <p className="mt-2 text-center text-sm text-gray-600 md:text-base">{OFFICE_ADDRESS}</p>
 
         <div className="mx-auto mt-6 flex flex-wrap items-center justify-center gap-3 text-sm">
           <a
