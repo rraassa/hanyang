@@ -10,6 +10,10 @@ export default function Header({ colorType, onNavigate }) {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const profileMenuRef = useRef(null);
+  const canUseHoverLens =
+    typeof window !== "undefined" &&
+    window.matchMedia &&
+    window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 
   useEffect(() => {
     const syncAuthState = () => {
@@ -71,15 +75,20 @@ export default function Header({ colorType, onNavigate }) {
             {menuItems.map(({ label, mode }, idx) => (
               <span
                 key={idx}
-                onClick={() => onNavigate(mode)} // ✅ 클릭 시 상태 변경
+                onClick={() => {
+                  setLensVisible(false);
+                  onNavigate(mode);
+                }} // ✅ 클릭 시 상태 변경
                 onMouseEnter={() => {
+                  if (!canUseHoverLens) return;
                   setLensVisible(true);
                   setLensText(label);
                 }}
                 onMouseLeave={() => setLensVisible(false)}
-                onMouseMove={(e) =>
-                  setLensPos({ x: e.clientX - 40, y: e.clientY + 40 })
-                }
+                onMouseMove={(e) => {
+                  if (!canUseHoverLens) return;
+                  setLensPos({ x: e.clientX - 40, y: e.clientY + 40 });
+                }}
                 className={`transition-all duration-300 hover:underline cursor-pointer ${textColor}`}
               >
                 {label}
@@ -147,7 +156,7 @@ export default function Header({ colorType, onNavigate }) {
       </div>
 
       {/* 렌즈 효과 */}
-      {lensVisible && (
+      {lensVisible && canUseHoverLens && (
         <div
           className="pointer-events-none fixed w-24 h-24 rounded-full bg-white border-2 border-[#0E2A7B] shadow-md flex items-center justify-center font-bold text-xl"
           style={{

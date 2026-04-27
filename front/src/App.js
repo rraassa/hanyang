@@ -312,7 +312,7 @@ function AppContent() {
         />
       )}
 
-      <main className={showFloatingMenu ? "pb-36 md:pb-0" : ""}>
+      <main className={showFloatingMenu && !viewMode ? "pb-36 md:pb-0" : ""}>
         <Routes>
           <Route
             path="/"
