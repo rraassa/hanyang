@@ -312,94 +312,96 @@ function AppContent() {
         />
       )}
 
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <>
-              {!viewMode && <div className="h-28 md:h-0" />}
-              {!viewMode && <MainVisual />}
-              <div className="w-full transition-all duration-700 ease-in-out">
-                {viewMode ? (
-                  <div className="w-full min-h-screen flex flex-col">
-                    {/* Header spacer */}
-                    <div className="h-20 bg-[#EBEAF3]"></div>
-                    {/* Purple section - 애니메이션으로 높이가 변함 */}
-                    <div className={`bg-[#EBEAF3] transition-all duration-700 ease-out ${
-                      isAnimating ? 'h-72' : 'h-16'
-                    }`}></div>
-                    {/* Content section with two-stage animation */}
-                    <div className="bg-[#fafaf5] w-full rounded-tr-[5rem] flex-1 flex flex-col relative overflow-hidden">
-                      <div
-                        className={`w-full flex flex-col transition-all duration-700 ease-out relative z-10 ${
-                          isReturning
-                            ? "transform translate-y-full opacity-0"
-                            : isAnimating
-                              ? "transform translate-y-full opacity-100"
-                              : "transform translate-y-0 opacity-100"
-                        }`}
-                        style={{
-                          backgroundColor: "#fafaf5",
-                          borderTopRightRadius: "5rem",
-                        }}
-                        onTransitionEnd={() => {
-                          if (isReturning) {
-                            console.log("[Front] Return transition completed");
-                          }
-                        }}
-                      >
-                        <div className="flex-1">
-                          <div className="px-4 pt-10">
-                            <div className={`transition-opacity duration-250 ease-in-out ${
-                              isPageTransition ? 'opacity-0' : 'opacity-100'
-                            }`}>
-                              {viewMode === "transferor" && <TransferorView />}
-                              {viewMode === "acceptor" && <AcceptorView />}
-                              {viewMode === "price" && <PriceView />}
-                              {viewMode === "inquiry" && <InquiryView />}
-                              {viewMode === "review" && <ReviewView />}
-                              {viewMode === "directions" && <DirectionsView />}
+      <main className={showFloatingMenu ? "pb-36 md:pb-0" : ""}>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <>
+                {!viewMode && <div className="h-28 md:h-0" />}
+                {!viewMode && <MainVisual />}
+                <div className="w-full transition-all duration-700 ease-in-out">
+                  {viewMode ? (
+                    <div className="w-full min-h-screen flex flex-col">
+                      {/* Header spacer */}
+                      <div className="h-20 bg-[#EBEAF3]"></div>
+                      {/* Purple section - 애니메이션으로 높이가 변함 */}
+                      <div className={`bg-[#EBEAF3] transition-all duration-700 ease-out ${
+                        isAnimating ? 'h-72' : 'h-16'
+                      }`}></div>
+                      {/* Content section with two-stage animation */}
+                      <div className="bg-[#fafaf5] w-full rounded-tr-[5rem] flex-1 flex flex-col relative overflow-hidden">
+                        <div
+                          className={`w-full flex flex-col transition-all duration-700 ease-out relative z-10 ${
+                            isReturning
+                              ? "transform translate-y-full opacity-0"
+                              : isAnimating
+                                ? "transform translate-y-full opacity-100"
+                                : "transform translate-y-0 opacity-100"
+                          }`}
+                          style={{
+                            backgroundColor: "#fafaf5",
+                            borderTopRightRadius: "5rem",
+                          }}
+                          onTransitionEnd={() => {
+                            if (isReturning) {
+                              console.log("[Front] Return transition completed");
+                            }
+                          }}
+                        >
+                          <div className="flex-1">
+                            <div className="px-4 pt-10">
+                              <div className={`transition-opacity duration-250 ease-in-out ${
+                                isPageTransition ? 'opacity-0' : 'opacity-100'
+                              }`}>
+                                {viewMode === "transferor" && <TransferorView />}
+                                {viewMode === "acceptor" && <AcceptorView />}
+                                {viewMode === "price" && <PriceView />}
+                                {viewMode === "inquiry" && <InquiryView />}
+                                {viewMode === "review" && <ReviewView />}
+                                {viewMode === "directions" && <DirectionsView />}
+                              </div>
                             </div>
-                          </div>
-                          <div
-                            className="overflow-hidden bg-[#fafaf5] shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.1)]"
-                            style={{
-                              marginTop: `${24 * footerRevealProgress}px`,
-                              maxHeight: `${104 * footerRevealProgress}px`,
-                              opacity: footerRevealProgress,
-                              transform: `translateY(${16 * (1 - footerRevealProgress)}px)`,
-                              pointerEvents: footerRevealProgress > 0 ? "auto" : "none",
-                              transition:
-                                "max-height 240ms ease-out, opacity 220ms ease-out, transform 280ms ease-out, margin-top 260ms ease-out",
-                            }}
-                          >
-                            <Footer />
+                            <div
+                              className="overflow-hidden bg-[#fafaf5] shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.1)]"
+                              style={{
+                                marginTop: `${24 * footerRevealProgress}px`,
+                                maxHeight: `${104 * footerRevealProgress}px`,
+                                opacity: footerRevealProgress,
+                                transform: `translateY(${16 * (1 - footerRevealProgress)}px)`,
+                                pointerEvents: footerRevealProgress > 0 ? "auto" : "none",
+                                transition:
+                                  "max-height 240ms ease-out, opacity 220ms ease-out, transform 280ms ease-out, margin-top 260ms ease-out",
+                              }}
+                            >
+                              <Footer />
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="transform">
-                    <div className="bg-[#fafaf5] rounded-tr-[3rem] md:rounded-tr-[5rem] shadow-[0_4px_12px_rgba(0,0,0,0.2)] px-4 md:px-10 pt-24 md:pt-40 pb-10 md:pb-16 w-full relative overflow-visible">
-                      <div className="absolute -top-10 md:-top-20 left-1/2 -translate-x-1/2 z-10 w-[95%] md:w-auto" ref={mainCardsRef}>
-                        <MainCards onNavigate={handleNavigate} />
+                  ) : (
+                    <div className="transform">
+                      <div className="bg-[#fafaf5] rounded-tr-[3rem] md:rounded-tr-[5rem] shadow-[0_4px_12px_rgba(0,0,0,0.2)] px-4 md:px-10 pt-24 md:pt-40 pb-10 md:pb-16 w-full relative overflow-visible">
+                        <div className="absolute -top-10 md:-top-20 left-1/2 -translate-x-1/2 z-10 w-[95%] md:w-auto" ref={mainCardsRef}>
+                          <MainCards onNavigate={handleNavigate} />
+                        </div>
+                        <ReviewSection onViewAll={() => handleNavigate("review")} />
+                        <ListingTable onNavigate={handleNavigate} />
                       </div>
-                      <ReviewSection onViewAll={() => handleNavigate("review")} />
-                      <ListingTable onNavigate={handleNavigate} />
+                      <InquirySection onNavigate={handleNavigate} />
+                      <div ref={inquiryTriggerRef} className="h-[0px] invisible pointer-events-none" />
                     </div>
-                    <InquirySection onNavigate={handleNavigate} />
-                    <div ref={inquiryTriggerRef} className="h-[0px] invisible pointer-events-none" />
-                  </div>
-                )}
-              </div>
-            </>
-          }
-        />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/auth/kakao/callback" element={<KakaoCallback />} />
-      </Routes>
+                  )}
+                </div>
+              </>
+            }
+          />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/auth/kakao/callback" element={<KakaoCallback />} />
+        </Routes>
+      </main>
 
       {!isAuthPage && !viewMode && (
         <div className="shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.1)] rounded-tr-[5rem]">
