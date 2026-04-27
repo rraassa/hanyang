@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
  * 카카오맵 JavaScript API
@@ -62,13 +62,14 @@ function KakaoMapCanvas({ onReady, onError }) {
 
   useEffect(() => {
     if (!appKey || !containerRef.current) return;
+    const container = containerRef.current;
     let cancelled = false;
     let loadTimeout = null;
 
     const run = async () => {
       try {
         await loadKakaoMapScript(appKey);
-        if (cancelled || !containerRef.current) return;
+        if (cancelled || !container) return;
         if (!window.kakao?.maps) {
           onError?.("SDK는 로드됐지만 kakao.maps 객체를 찾지 못했습니다.");
           return;
@@ -81,8 +82,8 @@ function KakaoMapCanvas({ onReady, onError }) {
         }, 7000);
 
         window.kakao.maps.load(() => {
-          if (cancelled || !containerRef.current) return;
-          const el = containerRef.current;
+          if (cancelled || !container) return;
+          const el = container;
           const fallbackLat = getOfficeLat();
           const fallbackLng = getOfficeLng();
           const fallbackPos = new window.kakao.maps.LatLng(fallbackLat, fallbackLng);
@@ -147,11 +148,9 @@ function KakaoMapCanvas({ onReady, onError }) {
           /* ignore */
         }
       }
-      if (containerRef.current) {
-        containerRef.current.innerHTML = "";
-      }
+      container.innerHTML = "";
     };
-  }, [appKey]);
+  }, [appKey, onError, onReady]);
 
   return <div ref={containerRef} className="h-full min-h-[min(50vh,480px)] w-full" />;
 }
@@ -160,6 +159,11 @@ export default function DirectionsView() {
   const appKey = getKakaoMapAppKey();
   const [mapStatus, setMapStatus] = useState("idle");
   const [mapErrorReason, setMapErrorReason] = useState("");
+  const handleMapReady = useCallback(() => setMapStatus("ready"), []);
+  const handleMapError = useCallback((reason) => {
+    setMapErrorReason(reason || "");
+    setMapStatus("error");
+  }, []);
 
   useEffect(() => {
     if (appKey) {
@@ -214,11 +218,8 @@ export default function DirectionsView() {
                 </div>
               )}
               <KakaoMapCanvas
-                onReady={() => setMapStatus("ready")}
-                onError={(reason) => {
-                  setMapErrorReason(reason || "");
-                  setMapStatus("error");
-                }}
+                onReady={handleMapReady}
+                onError={handleMapError}
               />
             </div>
           ) : (

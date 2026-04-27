@@ -52,10 +52,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-6">
       <Card className="w-full max-w-5xl shadow-2xl">
-        <div className="flex overflow-hidden">
-          <div className="w-1/2 p-10 flex flex-col justify-center z-10 relative bg-card">
+        <div className="flex flex-col overflow-hidden md:flex-row">
+          <div className="w-full p-5 flex flex-col justify-center z-10 relative bg-card md:w-1/2 md:p-10">
             <CardHeader className="relative pt-8">
               <button 
                 onClick={() => navigate("/")}
@@ -121,7 +121,7 @@ export default function LoginPage() {
             </CardContent>
           </div>
 
-          <div className="w-1/2 bg-muted relative">
+          <div className="hidden w-1/2 bg-muted relative md:block">
             <img
               src="/img/login-bg.png"
               alt="Login Visual"

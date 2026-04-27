@@ -104,10 +104,10 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-6">
       <Card className="w-full max-w-5xl shadow-2xl">
-        <div className="flex overflow-hidden">
-          <div className="w-1/2 p-10 flex flex-col justify-center z-10 relative bg-card">
+        <div className="flex flex-col overflow-hidden md:flex-row">
+          <div className="w-full p-5 flex flex-col justify-center z-10 relative bg-card md:w-1/2 md:p-10">
             <CardHeader className="relative pt-8">
               <button 
                 onClick={() => navigate("/")}
@@ -135,7 +135,7 @@ export default function SignupPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">이메일</Label>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col gap-2 sm:flex-row">
                     <Input
                       id="email"
                       type="email"
@@ -149,7 +149,7 @@ export default function SignupPage() {
                       type="button"
                       onClick={handleSendCode}
                       disabled={sendingCode || emailVerified}
-                      className="shrink-0"
+                      className="w-full shrink-0 sm:w-auto"
                     >
                       {emailVerified ? '인증완료' : sendingCode ? '전송 중...' : '인증요청'}
                     </Button>
@@ -159,7 +159,7 @@ export default function SignupPage() {
                 {codeSent && !emailVerified && (
                   <div className="space-y-2 rounded-md border bg-muted/30 p-3">
                     <Label htmlFor="code">인증 코드</Label>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col gap-2 sm:flex-row">
                       <Input
                         id="code"
                         type="text"
@@ -172,7 +172,7 @@ export default function SignupPage() {
                         type="button"
                         onClick={handleVerification}
                         disabled={verifyingCode}
-                        className="shrink-0"
+                        className="w-full shrink-0 sm:w-auto"
                       >
                         {verifyingCode ? '확인 중...' : '확인'}
                       </Button>
@@ -215,7 +215,7 @@ export default function SignupPage() {
             </CardContent>
           </div>
 
-          <div className="w-1/2 bg-muted relative">
+          <div className="hidden w-1/2 bg-muted relative md:block">
             <img
               src="/img/login-bg.png"
               alt="Signup Visual"

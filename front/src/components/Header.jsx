@@ -52,7 +52,7 @@ export default function Header({ colorType, onNavigate }) {
 
   return (
     <header className={`fixed top-0 w-full z-50 ${bgColor} shadow-md transition-colors duration-300`}>
-      <div className="flex flex-col gap-3 px-4 py-3 md:flex-row md:items-center md:justify-between md:px-10 md:py-5">
+      <div className="flex flex-col gap-2 px-3 py-3 md:flex-row md:items-center md:justify-between md:px-10 md:py-5">
         <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row md:items-center md:gap-10">
           <button
             type="button"
@@ -63,11 +63,11 @@ export default function Header({ colorType, onNavigate }) {
             <img
               src="/logo.png"
               alt="한양상사 로고"
-              className="h-8 w-auto md:h-10"
+              className="h-7 w-auto md:h-10"
             />
           </button>
 
-          <nav className="scrollbar-hide flex gap-4 overflow-x-auto whitespace-nowrap text-xs font-semibold md:space-x-8 md:gap-0 md:text-[15px]">
+          <nav className="scrollbar-hide flex gap-3 overflow-x-auto whitespace-nowrap text-[11px] font-semibold md:space-x-8 md:gap-0 md:text-[15px]">
             {menuItems.map(({ label, mode }, idx) => (
               <span
                 key={idx}
@@ -89,7 +89,7 @@ export default function Header({ colorType, onNavigate }) {
         </div>
 
         {/* 로그인/로그아웃 영역 */}
-        <div className={`ml-auto flex space-x-2 text-xs font-normal whitespace-nowrap md:text-sm ${textColor}`}>
+        <div className={`ml-auto flex items-center space-x-2 text-[11px] font-normal whitespace-nowrap md:text-sm ${textColor}`}>
           {isLoggedIn ? (
             <div className="relative" ref={profileMenuRef}>
               <button

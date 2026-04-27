@@ -1,7 +1,13 @@
 const KAKAO_REST_API_KEY = '09812f17a0d591bebdbaff3799dd185e';
-const KAKAO_REDIRECT_URI = window.location.hostname === 'localhost' 
-  ? 'http://localhost:3000/auth/kakao/callback'
-  : 'http://52.78.145.125/auth/kakao/callback';
+
+/**
+ * 접속 중인 origin을 기본으로 사용해 protocol/domain mismatch를 방지한다.
+ * 필요하면 REACT_APP_KAKAO_REDIRECT_URI로 명시 override 가능.
+ */
+const KAKAO_REDIRECT_URI = (
+  process.env.REACT_APP_KAKAO_REDIRECT_URI ||
+  `${window.location.origin}/auth/kakao/callback`
+).replace(/\/+$/, "");
 
 export const kakaoLogin = () => {
   const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_REST_API_KEY}&redirect_uri=${KAKAO_REDIRECT_URI}&response_type=code`;

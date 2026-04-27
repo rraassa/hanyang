@@ -317,13 +317,13 @@ function AppContent() {
           path="/"
           element={
             <>
-              {!viewMode && <div className="h-28 md:h-0" />}
+              {!viewMode && <div className="h-32 md:h-0" />}
               {!viewMode && <MainVisual />}
               <div className="w-full transition-all duration-700 ease-in-out">
                 {viewMode ? (
                   <div className="w-full min-h-screen flex flex-col">
                     {/* Header spacer */}
-                    <div className="h-20 bg-[#EBEAF3]"></div>
+                    <div className="h-24 bg-[#EBEAF3] md:h-20"></div>
                     {/* Purple section - 애니메이션으로 높이가 변함 */}
                     <div className={`bg-[#EBEAF3] transition-all duration-700 ease-out ${
                       isAnimating ? 'h-72' : 'h-16'
