@@ -13,7 +13,9 @@ const getOfficeLat = () => parseFloat(process.env.REACT_APP_OFFICE_LAT || String
 const getOfficeLng = () => parseFloat(process.env.REACT_APP_OFFICE_LNG || String(DEFAULT_LNG), 10);
 
 const getKakaoMapAppKey = () =>
-  process.env.REACT_APP_KAKAO_JAVASCRIPT_KEY || process.env.REACT_APP_KAKAO_MAP_APP_KEY || "";
+  String(
+    process.env.REACT_APP_KAKAO_JAVASCRIPT_KEY || process.env.REACT_APP_KAKAO_MAP_APP_KEY || ""
+  ).trim();
 
 const kakaoMapSearchUrl = () =>
   `https://map.kakao.com/link/search/${encodeURIComponent(OFFICE_ADDRESS)}`;
@@ -42,7 +44,7 @@ function loadKakaoMapScript(appKey) {
     script.id = "kakao-maps-sdk";
     script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(
       appKey
-    )}&autoload=false`;
+    )}&autoload=false&libraries=services`;
     script.async = true;
     script.onload = () => {
       script.setAttribute("data-loaded", "1");
@@ -81,26 +83,48 @@ function KakaoMapCanvas({ onReady, onError }) {
         window.kakao.maps.load(() => {
           if (cancelled || !containerRef.current) return;
           const el = containerRef.current;
-          const lat = getOfficeLat();
-          const lng = getOfficeLng();
-          const pos = new window.kakao.maps.LatLng(lat, lng);
+          const fallbackLat = getOfficeLat();
+          const fallbackLng = getOfficeLng();
+          const fallbackPos = new window.kakao.maps.LatLng(fallbackLat, fallbackLng);
 
           const map = new window.kakao.maps.Map(el, {
-            center: pos,
+            center: fallbackPos,
             level: 3,
           });
           mapRef.current = map;
 
-          const marker = new window.kakao.maps.Marker({ position: pos, map });
-          const infowindow = new window.kakao.maps.InfoWindow({
-            content: `<div style="padding:8px 12px;font-size:13px;max-width:240px;line-height:1.4;">${OFFICE_ADDRESS}</div>`,
-          });
-          infowindow.open(map, marker);
-          if (loadTimeout) {
-            clearTimeout(loadTimeout);
-            loadTimeout = null;
+          const drawMarker = (position) => {
+            const marker = new window.kakao.maps.Marker({ position, map });
+            const infowindow = new window.kakao.maps.InfoWindow({
+              content: `<div style="padding:8px 12px;font-size:13px;max-width:240px;line-height:1.4;">${OFFICE_ADDRESS}</div>`,
+            });
+            infowindow.open(map, marker);
+            map.setCenter(position);
+            if (loadTimeout) {
+              clearTimeout(loadTimeout);
+              loadTimeout = null;
+            }
+            onReady?.();
+          };
+
+          // 주소 기반으로 정확한 좌표를 우선 사용하고, 실패 시 기본 좌표로 폴백합니다.
+          if (window.kakao.maps.services?.Geocoder) {
+            const geocoder = new window.kakao.maps.services.Geocoder();
+            geocoder.addressSearch(OFFICE_ADDRESS, (result, status) => {
+              if (cancelled) return;
+              if (status === window.kakao.maps.services.Status.OK && result?.[0]) {
+                const y = Number(result[0].y);
+                const x = Number(result[0].x);
+                if (Number.isFinite(y) && Number.isFinite(x)) {
+                  drawMarker(new window.kakao.maps.LatLng(y, x));
+                  return;
+                }
+              }
+              drawMarker(fallbackPos);
+            });
+          } else {
+            drawMarker(fallbackPos);
           }
-          onReady?.();
         });
       } catch (e) {
         const reason = e?.message || "카카오맵 SDK 로드 실패";
@@ -231,14 +255,6 @@ export default function DirectionsView() {
           )}
         </div>
 
-        {appKey ? (
-          <p className="mx-auto mt-3 max-w-xl text-center text-xs text-gray-500">
-            지도는 카카오맵 API로 표시됩니다. 위치는{" "}
-            <code className="rounded bg-gray-200/80 px-1">REACT_APP_OFFICE_LAT</code> /{" "}
-            <code className="rounded bg-gray-200/80 px-1">REACT_APP_OFFICE_LNG</code>로 조정할 수
-            있습니다.
-          </p>
-        ) : null}
       </div>
     </section>
   );
