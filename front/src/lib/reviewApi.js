@@ -55,15 +55,27 @@ export const getMyReviews = async () => {
   return data.reviews || [];
 };
 
-// 후기 작성
+// 후기 작성 (imageUrl: data URL 또는 공개 URL / Lambda가 imageData 필드만 읽는 경우 대비해 동시 전송)
 export const createReview = async (title, content, city = '서울', type = '후기', imageUrl = '') => {
   const userId = getCurrentUserId();
   if (!userId) throw new Error('로그인이 필요합니다');
-  
+
+  const payload = {
+    userId,
+    title,
+    content,
+    city,
+    type,
+    imageUrl: imageUrl || '',
+  };
+  if (imageUrl && String(imageUrl).startsWith('data:image/')) {
+    payload.imageData = imageUrl;
+  }
+
   const response = await fetch(`${API_URL}/reviews`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId, title, content, city, type, imageUrl })
+    body: JSON.stringify(payload),
   });
 
   const data = await response.json();

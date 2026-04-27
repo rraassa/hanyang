@@ -1,33 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { getAllReviews } from "../lib/reviewApi";
+import { resolveReviewImageUrl, logReviewImageError } from "../lib/reviewImageUrl";
 
-const REVIEW_IMAGE_BUCKET = process.env.REACT_APP_REVIEW_S3_BUCKET || "hanyang-taxi-data";
-const REVIEW_IMAGE_REGION = process.env.REACT_APP_REVIEW_S3_REGION || "ap-northeast-2";
-
-const toAbsoluteReviewImageUrl = (value) => {
-  if (!value) return "";
-  const src = String(value).trim();
-  if (!src) return "";
-  if (src.startsWith("data:image/")) return src;
-  if (src.startsWith("http://") || src.startsWith("https://")) return src;
-  if (src.startsWith("data/reviews/")) {
-    return `https://${REVIEW_IMAGE_BUCKET}.s3.${REVIEW_IMAGE_REGION}.amazonaws.com/${src}`;
-  }
-  return src;
-};
-
-const getReviewImageSource = (review) => {
-  if (!review) return "";
-  return toAbsoluteReviewImageUrl(
-    review.imageUrl ||
-    review.imageURL ||
-    review.image ||
-    review.photoUrl ||
-    review.photoURL ||
-    review.attachmentUrl ||
-    review.fileUrl
-  );
-};
+const getReviewImageSource = resolveReviewImageUrl;
 
 export default function SlidingReviewSection({ onViewAll }) {
   const [reviews, setReviews] = useState([]);
@@ -124,6 +99,7 @@ export default function SlidingReviewSection({ onViewAll }) {
                         src={getReviewImageSource(review)}
                         alt="거래 후기 이미지"
                         className="h-full w-full object-cover"
+                        onError={(e) => logReviewImageError(e, "메인 후기 캐러셀")}
                       />
                     ) : (
                       <div className="h-full w-full bg-white" />

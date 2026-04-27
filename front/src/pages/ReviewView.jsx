@@ -9,39 +9,14 @@ import {
   getCurrentUserId,
   isAdminUser,
 } from "../lib/reviewApi";
+import {
+  resolveReviewImageUrl,
+  withResolvedReviewImage,
+  logReviewImageError,
+} from "../lib/reviewImageUrl";
 
-const REVIEW_IMAGE_BUCKET = process.env.REACT_APP_REVIEW_S3_BUCKET || "hanyang-taxi-data";
-const REVIEW_IMAGE_REGION = process.env.REACT_APP_REVIEW_S3_REGION || "ap-northeast-2";
-
-const toAbsoluteReviewImageUrl = (value) => {
-  if (!value) return "";
-  const src = String(value).trim();
-  if (!src) return "";
-  if (src.startsWith("data:image/")) return src;
-  if (src.startsWith("http://") || src.startsWith("https://")) return src;
-  if (src.startsWith("data/reviews/")) {
-    return `https://${REVIEW_IMAGE_BUCKET}.s3.${REVIEW_IMAGE_REGION}.amazonaws.com/${src}`;
-  }
-  return src;
-};
-
-const getReviewImageSource = (review) => {
-  if (!review) return "";
-  return toAbsoluteReviewImageUrl(
-    review.imageUrl ||
-    review.imageURL ||
-    review.image ||
-    review.photoUrl ||
-    review.photoURL ||
-    review.attachmentUrl ||
-    review.fileUrl
-  );
-};
-
-const normalizeReviewImage = (review) => ({
-  ...review,
-  imageUrl: getReviewImageSource(review),
-});
+const getReviewImageSource = resolveReviewImageUrl;
+const normalizeReviewImage = withResolvedReviewImage;
 
 export default function ReviewView() {
   const navigate = useNavigate();
@@ -129,7 +104,46 @@ export default function ReviewView() {
     setIsWritePageOpen(true);
   };
 
-  const handlePickImage = (event) => {
+  /** 업로드 실패·타임아웃 완화: 긴 변 기준 리사이즈 후 JPEG data URL */
+  const compressImageToDataUrl = (file, maxEdge = 1920, quality = 0.82) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > maxEdge || height > maxEdge) {
+            if (width >= height) {
+              height = Math.round((height * maxEdge) / width);
+              width = maxEdge;
+            } else {
+              width = Math.round((width * maxEdge) / height);
+              height = maxEdge;
+            }
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            reject(new Error("canvas"));
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          try {
+            resolve(canvas.toDataURL("image/jpeg", quality));
+          } catch (e) {
+            reject(e);
+          }
+        };
+        img.onerror = () => reject(new Error("image load"));
+        img.src = reader.result;
+      };
+      reader.onerror = () => reject(new Error("read"));
+      reader.readAsDataURL(file);
+    });
+
+  const handlePickImage = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -139,13 +153,23 @@ export default function ReviewView() {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        setDraftImageUrl(reader.result);
-      }
-    };
-    reader.readAsDataURL(file);
+    try {
+      const dataUrl =
+        file.size > 800000 ? await compressImageToDataUrl(file) : await new Promise((resolve, reject) => {
+          const r = new FileReader();
+          r.onload = () => resolve(typeof r.result === "string" ? r.result : "");
+          r.onerror = reject;
+          r.readAsDataURL(file);
+        });
+      if (dataUrl) setDraftImageUrl(dataUrl);
+    } catch {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === "string") setDraftImageUrl(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+    event.target.value = "";
   };
 
   const handleOpenReviewDetail = (review) => {
@@ -302,6 +326,7 @@ export default function ReviewView() {
                   src={getReviewImageSource(selectedReview)}
                   alt="후기 이미지"
                   className="h-full w-full object-cover"
+                  onError={(e) => logReviewImageError(e, "후기 상세")}
                 />
               )}
             </div>
@@ -437,6 +462,7 @@ export default function ReviewView() {
                   src={getReviewImageSource(review)}
                   alt="후기 이미지"
                   className="h-36 w-full rounded-md object-cover shadow-[0_4px_10px_rgba(0,0,0,0.08)] transition-transform duration-300 group-hover:translate-y-[-2px]"
+                  onError={(e) => logReviewImageError(e, "후기 목록")}
                 />
               )}
               {!getReviewImageSource(review) && (
