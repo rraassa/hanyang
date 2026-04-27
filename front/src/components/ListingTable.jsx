@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  createListing,
+  deleteListing as deleteListingApi,
+  getListings,
+  updateListing,
+} from "../lib/listingApi";
 
 const parseJwtPayload = (token) => {
   if (!token) return null;
@@ -28,7 +34,6 @@ const checkIsAdminUser = () => {
   return groups.some((groupName) => String(groupName).toLowerCase() === "admin");
 };
 
-const LISTINGS_STORAGE_KEY = "listingTableData";
 const DEFAULT_LISTINGS = [
   { id: 1, year: "2020년식", model: "소나타", mileage: "11만km", accident: "무사고", color: "회색", status: "구매가능" },
   { id: 2, year: "2021년식", model: "K5", mileage: "9만km", accident: "무사고", color: "회색", status: "구매가능" },
@@ -47,21 +52,11 @@ const DEFAULT_LISTINGS = [
   { id: 15, year: "2020년식", model: "베뉴", mileage: "8만km", accident: "단순교환", color: "회색", status: "판매완료" },
 ];
 
-const loadInitialListings = () => {
-  try {
-    const saved = localStorage.getItem(LISTINGS_STORAGE_KEY);
-    if (!saved) return DEFAULT_LISTINGS;
-    const parsed = JSON.parse(saved);
-    if (!Array.isArray(parsed)) return DEFAULT_LISTINGS;
-    return parsed;
-  } catch (error) {
-    return DEFAULT_LISTINGS;
-  }
-};
-
 export default function ListingBox({ onNavigate }) {
   const navigate = useNavigate();
-  const [listings, setListings] = useState(loadInitialListings);
+  const [listings, setListings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [draft, setDraft] = useState({
     year: "",
@@ -77,19 +72,26 @@ export default function ListingBox({ onNavigate }) {
   const canManageListings = isLoggedIn && isAdmin;
 
   useEffect(() => {
-    try {
-      localStorage.setItem(LISTINGS_STORAGE_KEY, JSON.stringify(listings));
-    } catch (error) {
-      // localStorage 저장 실패 시 화면 동작은 유지
-      console.error("매물 목록 저장 실패:", error);
-    }
-  }, [listings]);
+    const loadListings = async () => {
+      try {
+        const data = await getListings();
+        setListings(data.length > 0 ? data : DEFAULT_LISTINGS);
+      } catch (error) {
+        console.error("매물 목록 로드 실패:", error);
+        setListings(DEFAULT_LISTINGS);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadListings();
+  }, []);
 
   const handleDraftChange = (field, value) => {
     setDraft((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleRegisterToggle = () => {
+  const handleRegisterToggle = async () => {
     if (!isRegisterOpen) {
       setIsRegisterOpen(true);
       return;
@@ -105,12 +107,17 @@ export default function ListingBox({ onNavigate }) {
       return;
     }
 
-    setListings((prev) => [
-      { id: Date.now(), year, model, mileage, accident, color, status: "구매가능" },
-      ...prev,
-    ]);
-    setDraft({ year: "", model: "", mileage: "", accident: "", color: "" });
-    setIsRegisterOpen(false);
+    try {
+      setSubmitting(true);
+      const created = await createListing({ year, model, mileage, accident, color });
+      setListings((prev) => [created || { id: Date.now(), year, model, mileage, accident, color, status: "구매가능" }, ...prev]);
+      setDraft({ year: "", model: "", mileage: "", accident: "", color: "" });
+      setIsRegisterOpen(false);
+    } catch (error) {
+      alert(error.message || "매물 등록에 실패했습니다.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleAdminRowClick = (id) => {
@@ -123,20 +130,40 @@ export default function ListingBox({ onNavigate }) {
     setActiveUserRowId((prev) => (prev === id ? null : id));
   };
 
-  const handleToggleStatus = (id) => {
-    setListings((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? { ...item, status: item.status === "판매완료" ? "구매가능" : "판매완료" }
-          : item
-      )
-    );
-    setActiveAdminRowId(null);
+  const handleToggleStatus = async (id) => {
+    const target = listings.find((item) => item.id === id);
+    if (!target) return;
+
+    const nextStatus = target.status === "판매완료" ? "구매가능" : "판매완료";
+    try {
+      setSubmitting(true);
+      const updated = await updateListing(id, { status: nextStatus });
+      setListings((prev) =>
+        prev.map((item) =>
+          item.id === id
+            ? { ...item, ...(updated || {}), status: updated?.status || nextStatus }
+            : item
+        )
+      );
+      setActiveAdminRowId(null);
+    } catch (error) {
+      alert(error.message || "매물 상태 변경에 실패했습니다.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleDeleteListing = (id) => {
-    setListings((prev) => prev.filter((item) => item.id !== id));
-    setActiveAdminRowId(null);
+  const handleDeleteListing = async (id) => {
+    try {
+      setSubmitting(true);
+      await deleteListingApi(id);
+      setListings((prev) => prev.filter((item) => item.id !== id));
+      setActiveAdminRowId(null);
+    } catch (error) {
+      alert(error.message || "매물 삭제에 실패했습니다.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -147,6 +174,7 @@ export default function ListingBox({ onNavigate }) {
           <button
             type="button"
             onClick={handleRegisterToggle}
+            disabled={submitting}
             className="rounded-lg bg-white px-3 py-1.5 text-sm font-semibold text-[#0E2A7B] shadow-[0_4px_12px_rgba(0,0,0,0.12)] hover:bg-[#f7f7f7]"
           >
             {isRegisterOpen ? "등록 완료" : "매물 등록"}
@@ -198,6 +226,9 @@ export default function ListingBox({ onNavigate }) {
 
         {/* 리스트 내용 스크롤 영역 */}
         <div className="max-h-[450px] overflow-y-auto scrollbar-hide divide-y divide-gray-200">
+          {loading && (
+            <div className="px-4 py-8 text-center text-gray-500">매물을 불러오는 중...</div>
+          )}
           {listings.map((item, idx) => {
             const isAvailable = item.status === "구매가능";
             const isAdminActionsOpen = canManageListings && activeAdminRowId === item.id;
@@ -243,6 +274,7 @@ export default function ListingBox({ onNavigate }) {
                           e.stopPropagation();
                           handleToggleStatus(item.id);
                         }}
+                        disabled={submitting}
                         className="rounded-md bg-[#0E2A7B] px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-[#0b2367]"
                       >
                         {item.status === "판매완료" ? "구매가능" : "판매 완료"}
@@ -253,6 +285,7 @@ export default function ListingBox({ onNavigate }) {
                           e.stopPropagation();
                           handleDeleteListing(item.id);
                         }}
+                        disabled={submitting}
                         className="rounded-md bg-red-500 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-red-600"
                       >
                         삭제
