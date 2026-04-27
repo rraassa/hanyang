@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 const TAB_PROCEDURE = "procedure";
 const TAB_DOCUMENTS = "documents";
@@ -32,8 +32,6 @@ export default function TransferorView() {
   const searchTargetText = isProcedure ? "매도 절차" : "매도 서류";
   const [searchTypingIndex, setSearchTypingIndex] = useState(0);
   const [isDeletingSearchText, setIsDeletingSearchText] = useState(false);
-  const [revealStep, setRevealStep] = useState(0);
-  const revealStartYRef = useRef(0);
 
   useEffect(() => {
     setSearchTypingIndex(0);
@@ -65,44 +63,6 @@ export default function TransferorView() {
 
     return () => clearTimeout(timer);
   }, [isDeletingSearchText, searchTypingIndex, searchTargetText]);
-
-  useEffect(() => {
-    const isDocuments = !isProcedure;
-
-    revealStartYRef.current = window.scrollY;
-    setRevealStep(0);
-
-    const handleRevealScroll = () => {
-      const delta = Math.max(0, window.scrollY - revealStartYRef.current);
-      const atBottom =
-        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
-      const vh = window.innerHeight || 900;
-      const step1 = Math.max(36, vh * 0.06);
-      const step2 = Math.max(115, vh * 0.17);
-      const step3 = Math.max(195, vh * 0.28);
-      let nextStep = 0;
-
-      if (delta > step1) nextStep = 1;
-      if (delta > step2) nextStep = 2;
-      if (delta > step3) nextStep = 3;
-
-      // 매도 서류 탭은 항목이 많아서 2개 묶음 단위로 추가 단계 노출
-      if (isDocuments) {
-        if (delta > step3 + 70) nextStep = 4;
-        if (delta > step3 + 140) nextStep = 5;
-      }
-
-      if (atBottom) {
-        nextStep = isDocuments ? 5 : 3;
-      }
-
-      setRevealStep(nextStep);
-    };
-
-    handleRevealScroll();
-    window.addEventListener("scroll", handleRevealScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleRevealScroll);
-  }, [isProcedure]);
 
   return (
     <section className="w-full px-4 pb-8 md:pb-10">
@@ -159,11 +119,7 @@ export default function TransferorView() {
           </div>
 
           <div className="mx-auto mt-8 w-full max-w-[900px] text-left md:mt-12">
-            <h3
-              className={`text-2xl font-extrabold text-black transition-all duration-500 ease-out md:text-[32px] ${
-                revealStep < 1 ? "translate-y-5 opacity-0" : "translate-y-0 opacity-100"
-              }`}
-            >
+            <h3 className="text-2xl font-extrabold text-black md:text-[32px]">
               {isProcedure ? "간단한 매도 절차" : "간단한 매도 서류"}
             </h3>
 
@@ -173,9 +129,7 @@ export default function TransferorView() {
                   {procedureItems.map((item, index) => (
                     <li
                       key={item.title}
-                      className={`text-black transition-all duration-500 ease-out ${
-                        revealStep < index + 2 ? "translate-y-5 opacity-0" : "translate-y-0 opacity-100"
-                      }`}
+                      className="text-black"
                     >
                       <p className="text-base font-extrabold leading-tight md:text-[20px]">
                         {index + 1}. {item.title}
@@ -190,15 +144,8 @@ export default function TransferorView() {
               </div>
             ) : (
               <ol className="mt-7 list-decimal space-y-3 pl-8 text-base font-bold leading-snug text-black md:mt-10 md:space-y-4 md:pl-10 md:text-[20px]">
-                {documentItems.map((item, index) => (
-                  <li
-                    key={item}
-                    className={`transition-all duration-500 ease-out ${
-                      revealStep < 2 + Math.floor(index / 2)
-                        ? "translate-y-5 opacity-0"
-                        : "translate-y-0 opacity-100"
-                    }`}
-                  >
+                {documentItems.map((item) => (
+                  <li key={item}>
                     {item}
                   </li>
                 ))}
