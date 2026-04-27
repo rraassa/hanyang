@@ -1,9 +1,30 @@
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "./ui/Card";
 import { cn } from "../lib/utils";
 
 export default function MainCards({ onNavigate }) {
   const navigate = useNavigate();
+  const sectionRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const target = sectionRef.current;
+    if (!target) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(target);
+        }
+      },
+      { threshold: 0.2, rootMargin: "0px 0px -8% 0px" }
+    );
+
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, []);
 
   const handleTransferorNavigate = () => {
     if (typeof onNavigate === "function") {
@@ -22,7 +43,13 @@ export default function MainCards({ onNavigate }) {
   };
 
   return (
-    <section className="flex justify-center items-start py-8 md:py-20 md:-mt-20">
+    <section
+      ref={sectionRef}
+      className={cn(
+        "flex justify-center items-start py-8 md:py-20 md:-mt-20 transition-all duration-700 ease-out",
+        isVisible ? "translate-y-0 opacity-100" : "translate-y-12 opacity-0"
+      )}
+    >
       <div className="relative flex w-full max-w-[920px] flex-col rounded-2xl bg-[#fafaf5] px-4 py-5 shadow-[0_10px_30px_rgba(0,0,0,0.2)] md:w-[900px] md:flex-row md:rounded-tr-[4rem] md:px-12 md:py-12 md:pb-6 overflow-visible z-0">
         {/* 파란 카드 - 양도 */}
         <Card
