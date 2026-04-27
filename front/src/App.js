@@ -383,7 +383,10 @@ function AppContent() {
                   ) : (
                     <div className="transform">
                       <div className="bg-[#fafaf5] rounded-tr-[3rem] md:rounded-tr-[5rem] shadow-[0_4px_12px_rgba(0,0,0,0.2)] px-4 md:px-10 pt-24 md:pt-40 pb-10 md:pb-16 w-full relative overflow-visible">
-                        <div className="absolute -top-10 md:-top-20 left-1/2 -translate-x-1/2 z-10 w-[95%] md:w-auto" ref={mainCardsRef}>
+                      <div
+                        className="relative z-10 mx-auto -mt-8 mb-6 w-[95%] md:absolute md:-top-20 md:mb-0 md:w-auto md:left-1/2 md:-translate-x-1/2"
+                        ref={mainCardsRef}
+                      >
                           <MainCards onNavigate={handleNavigate} />
                         </div>
                         <ReviewSection onViewAll={() => handleNavigate("review")} />
