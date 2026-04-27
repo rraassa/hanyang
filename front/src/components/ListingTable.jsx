@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const parseJwtPayload = (token) => {
@@ -28,25 +28,40 @@ const checkIsAdminUser = () => {
   return groups.some((groupName) => String(groupName).toLowerCase() === "admin");
 };
 
+const LISTINGS_STORAGE_KEY = "listingTableData";
+const DEFAULT_LISTINGS = [
+  { id: 1, year: "2020년식", model: "소나타", mileage: "11만km", accident: "무사고", color: "회색", status: "구매가능" },
+  { id: 2, year: "2021년식", model: "K5", mileage: "9만km", accident: "무사고", color: "회색", status: "구매가능" },
+  { id: 3, year: "2019년식", model: "쏘렌토", mileage: "14만km", accident: "단순교환", color: "회색", status: "판매완료" },
+  { id: 4, year: "2022년식", model: "GV80", mileage: "6만km", accident: "무사고", color: "회색", status: "구매가능" },
+  { id: 5, year: "2018년식", model: "K9", mileage: "16만km", accident: "무사고", color: "회색", status: "판매완료" },
+  { id: 6, year: "2020년식", model: "QM6", mileage: "10만km", accident: "단순교환", color: "회색", status: "구매가능" },
+  { id: 7, year: "2021년식", model: "카니발", mileage: "8만km", accident: "무사고", color: "회색", status: "판매완료" },
+  { id: 8, year: "2022년식", model: "아이오닉5", mileage: "5만km", accident: "무사고", color: "회색", status: "구매가능" },
+  { id: 9, year: "2017년식", model: "모닝", mileage: "12만km", accident: "단순교환", color: "회색", status: "판매완료" },
+  { id: 10, year: "2019년식", model: "K3", mileage: "10만km", accident: "무사고", color: "회색", status: "구매가능" },
+  { id: 11, year: "2021년식", model: "GV70", mileage: "7만km", accident: "무사고", color: "회색", status: "판매완료" },
+  { id: 12, year: "2020년식", model: "투싼", mileage: "9만km", accident: "단순교환", color: "회색", status: "구매가능" },
+  { id: 13, year: "2018년식", model: "스타리아", mileage: "13만km", accident: "무사고", color: "회색", status: "판매완료" },
+  { id: 14, year: "2019년식", model: "레이", mileage: "11만km", accident: "무사고", color: "회색", status: "구매가능" },
+  { id: 15, year: "2020년식", model: "베뉴", mileage: "8만km", accident: "단순교환", color: "회색", status: "판매완료" },
+];
+
+const loadInitialListings = () => {
+  try {
+    const saved = localStorage.getItem(LISTINGS_STORAGE_KEY);
+    if (!saved) return DEFAULT_LISTINGS;
+    const parsed = JSON.parse(saved);
+    if (!Array.isArray(parsed)) return DEFAULT_LISTINGS;
+    return parsed;
+  } catch (error) {
+    return DEFAULT_LISTINGS;
+  }
+};
+
 export default function ListingBox({ onNavigate }) {
   const navigate = useNavigate();
-  const [listings, setListings] = useState([
-    { id: 1, year: "2020년식", model: "소나타", mileage: "11만km", accident: "무사고", color: "회색", status: "구매가능" },
-    { id: 2, year: "2021년식", model: "K5", mileage: "9만km", accident: "무사고", color: "회색", status: "구매가능" },
-    { id: 3, year: "2019년식", model: "쏘렌토", mileage: "14만km", accident: "단순교환", color: "회색", status: "판매완료" },
-    { id: 4, year: "2022년식", model: "GV80", mileage: "6만km", accident: "무사고", color: "회색", status: "구매가능" },
-    { id: 5, year: "2018년식", model: "K9", mileage: "16만km", accident: "무사고", color: "회색", status: "판매완료" },
-    { id: 6, year: "2020년식", model: "QM6", mileage: "10만km", accident: "단순교환", color: "회색", status: "구매가능" },
-    { id: 7, year: "2021년식", model: "카니발", mileage: "8만km", accident: "무사고", color: "회색", status: "판매완료" },
-    { id: 8, year: "2022년식", model: "아이오닉5", mileage: "5만km", accident: "무사고", color: "회색", status: "구매가능" },
-    { id: 9, year: "2017년식", model: "모닝", mileage: "12만km", accident: "단순교환", color: "회색", status: "판매완료" },
-    { id: 10, year: "2019년식", model: "K3", mileage: "10만km", accident: "무사고", color: "회색", status: "구매가능" },
-    { id: 11, year: "2021년식", model: "GV70", mileage: "7만km", accident: "무사고", color: "회색", status: "판매완료" },
-    { id: 12, year: "2020년식", model: "투싼", mileage: "9만km", accident: "단순교환", color: "회색", status: "구매가능" },
-    { id: 13, year: "2018년식", model: "스타리아", mileage: "13만km", accident: "무사고", color: "회색", status: "판매완료" },
-    { id: 14, year: "2019년식", model: "레이", mileage: "11만km", accident: "무사고", color: "회색", status: "구매가능" },
-    { id: 15, year: "2020년식", model: "베뉴", mileage: "8만km", accident: "단순교환", color: "회색", status: "판매완료" },
-  ]);
+  const [listings, setListings] = useState(loadInitialListings);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [draft, setDraft] = useState({
     year: "",
@@ -60,6 +75,15 @@ export default function ListingBox({ onNavigate }) {
   const isAdmin = useMemo(() => checkIsAdminUser(), []);
   const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
   const canManageListings = isLoggedIn && isAdmin;
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(LISTINGS_STORAGE_KEY, JSON.stringify(listings));
+    } catch (error) {
+      // localStorage 저장 실패 시 화면 동작은 유지
+      console.error("매물 목록 저장 실패:", error);
+    }
+  }, [listings]);
 
   const handleDraftChange = (field, value) => {
     setDraft((prev) => ({ ...prev, [field]: value }));
