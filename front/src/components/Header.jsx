@@ -48,7 +48,6 @@ export default function Header({ colorType, onNavigate }) {
     { label: "개인택시 시세", mode: "price" },
     { label: "문의하기", mode: "inquiry" },
     { label: "거래후기", mode: "review" },
-    { label: "오시는 길", mode: "directions" },
   ];
 
   return (

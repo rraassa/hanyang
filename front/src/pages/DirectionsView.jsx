@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
  * 카카오맵 JavaScript API
@@ -40,7 +40,7 @@ function loadKakaoMapScript(appKey) {
     }
     const script = document.createElement("script");
     script.id = "kakao-maps-sdk";
-    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(
+    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(
       appKey
     )}&autoload=false`;
     script.async = true;
@@ -53,7 +53,7 @@ function loadKakaoMapScript(appKey) {
   });
 }
 
-function KakaoMapCanvas() {
+function KakaoMapCanvas({ onReady, onError }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const appKey = getKakaoMapAppKey();
@@ -61,11 +61,22 @@ function KakaoMapCanvas() {
   useEffect(() => {
     if (!appKey || !containerRef.current) return;
     let cancelled = false;
+    let loadTimeout = null;
 
     const run = async () => {
       try {
         await loadKakaoMapScript(appKey);
-        if (cancelled || !containerRef.current || !window.kakao?.maps) return;
+        if (cancelled || !containerRef.current) return;
+        if (!window.kakao?.maps) {
+          onError?.("SDK는 로드됐지만 kakao.maps 객체를 찾지 못했습니다.");
+          return;
+        }
+
+        loadTimeout = window.setTimeout(() => {
+          if (!cancelled) {
+            onError?.("지도 초기화가 지연되고 있습니다. 플랫폼 Web 도메인 등록을 확인해 주세요.");
+          }
+        }, 7000);
 
         window.kakao.maps.load(() => {
           if (cancelled || !containerRef.current) return;
@@ -85,9 +96,16 @@ function KakaoMapCanvas() {
             content: `<div style="padding:8px 12px;font-size:13px;max-width:240px;line-height:1.4;">${OFFICE_ADDRESS}</div>`,
           });
           infowindow.open(map, marker);
+          if (loadTimeout) {
+            clearTimeout(loadTimeout);
+            loadTimeout = null;
+          }
+          onReady?.();
         });
-      } catch {
-        /* no-op */
+      } catch (e) {
+        const reason = e?.message || "카카오맵 SDK 로드 실패";
+        console.warn("[DirectionsView] Kakao map init failed:", reason);
+        onError?.(reason);
       }
     };
 
@@ -95,6 +113,9 @@ function KakaoMapCanvas() {
 
     return () => {
       cancelled = true;
+      if (loadTimeout) {
+        clearTimeout(loadTimeout);
+      }
       if (mapRef.current) {
         try {
           mapRef.current = null;
@@ -113,6 +134,18 @@ function KakaoMapCanvas() {
 
 export default function DirectionsView() {
   const appKey = getKakaoMapAppKey();
+  const [mapStatus, setMapStatus] = useState("idle");
+  const [mapErrorReason, setMapErrorReason] = useState("");
+
+  useEffect(() => {
+    if (appKey) {
+      setMapStatus("loading");
+      setMapErrorReason("");
+    } else {
+      setMapStatus("idle");
+      setMapErrorReason("");
+    }
+  }, [appKey]);
 
   return (
     <section className="w-full px-4 pb-8 md:pb-10">
@@ -134,7 +167,36 @@ export default function DirectionsView() {
 
         <div className="mx-auto mt-6 w-full overflow-hidden rounded-2xl bg-white shadow-[0_10px_40px_rgba(0,0,0,0.12),0_4px_12px_rgba(0,0,0,0.08)] ring-1 ring-black/[0.04]">
           {appKey ? (
-            <KakaoMapCanvas />
+            <div className="relative">
+              {(mapStatus === "idle" || mapStatus === "loading") && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#f5f6f8] text-sm text-gray-600">
+                  지도를 불러오는 중입니다...
+                </div>
+              )}
+              {mapStatus === "error" && (
+                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-[#f5f6f8] px-6 text-center">
+                  <p className="text-sm font-semibold text-gray-700">지도를 불러오지 못했습니다.</p>
+                  <p className="max-w-lg text-xs text-gray-500">
+                    {mapErrorReason || "카카오 앱의 Web 도메인/JavaScript 키 설정을 확인해 주세요."}
+                  </p>
+                  <a
+                    href={kakaoMapSearchUrl()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-full bg-[#0E2A7B] px-5 py-2 text-sm font-semibold text-white hover:bg-[#0a1f5c]"
+                  >
+                    카카오맵에서 위치 보기
+                  </a>
+                </div>
+              )}
+              <KakaoMapCanvas
+                onReady={() => setMapStatus("ready")}
+                onError={(reason) => {
+                  setMapErrorReason(reason || "");
+                  setMapStatus("error");
+                }}
+              />
+            </div>
           ) : (
             <div className="flex min-h-[min(50vh,320px)] flex-col items-center justify-center gap-4 bg-[#f5f6f8] px-6 py-12 text-center">
               <p className="text-sm text-gray-700">

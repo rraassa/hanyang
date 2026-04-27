@@ -76,10 +76,13 @@ export default function FloatingCircleMenu({ onNavigateDirections }) {
       <button
         type="button"
         onClick={() => onNavigateDirections?.()}
-        className="flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full bg-[#0E2A7B] text-white shadow-[0_4px_14px_rgba(14,42,123,0.45)] transition hover:bg-[#0a1f5c] focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-[#0E2A7B] md:h-[4.75rem] md:w-[4.75rem]"
+        className="flex h-[4.5rem] w-[4.5rem] flex-col items-center justify-center gap-0.5 rounded-full bg-[#0E2A7B] text-white shadow-[0_4px_14px_rgba(14,42,123,0.45)] transition hover:bg-[#0a1f5c] focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-[#0E2A7B] md:h-[4.75rem] md:w-[4.75rem]"
         aria-label="오시는 길 페이지로"
       >
         <IconMapPin className="h-7 w-7 md:h-8 md:w-8" />
+        <span className="px-1 text-center text-[0.6rem] font-bold leading-tight md:text-[0.65rem]">
+          오시는 길
+        </span>
       </button>
     </div>
   );
