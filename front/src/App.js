@@ -22,8 +22,17 @@ import AcceptorView from "./pages/AcceptorView";
 import PriceView from "./pages/PriceView";
 import InquiryView from "./pages/InquiryView";
 import ReviewView from "./pages/ReviewView";
+import DirectionsView from "./pages/DirectionsView";
+import FloatingCircleMenu from "./components/FloatingCircleMenu";
 
-const VIEW_MODES = new Set(["transferor", "acceptor", "price", "inquiry", "review"]);
+const VIEW_MODES = new Set([
+  "transferor",
+  "acceptor",
+  "price",
+  "inquiry",
+  "review",
+  "directions",
+]);
 
 function AppContent() {
   const location = useLocation();
@@ -291,9 +300,17 @@ function AppContent() {
     };
   }, [location.pathname, navigate]);
 
+  const showFloatingMenu =
+    !isAuthPage && !location.pathname.startsWith("/auth/");
+
   return (
     <div className="bg-[#EBEAF3] min-h-screen font-sans text-gray-900">
       {!isAuthPage && <Header colorType={headerState} onNavigate={handleNavigate} />}
+      {showFloatingMenu && (
+        <FloatingCircleMenu
+          onNavigateDirections={() => handleNavigate("directions")}
+        />
+      )}
 
       <Routes>
         <Route
@@ -341,6 +358,7 @@ function AppContent() {
                               {viewMode === "price" && <PriceView />}
                               {viewMode === "inquiry" && <InquiryView />}
                               {viewMode === "review" && <ReviewView />}
+                              {viewMode === "directions" && <DirectionsView />}
                             </div>
                           </div>
                           <div

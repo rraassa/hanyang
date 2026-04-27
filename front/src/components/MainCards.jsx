@@ -60,7 +60,7 @@ export default function MainCards({ onNavigate }) {
         >
           <div className="text-left mt-2 mb-2 pl-1 md:mt-5 md:mb-5 md:pl-3">
             <p className="text-2xl md:text-3xl font-bold leading-tight mb-1">양도</p>
-            <p className="text-base mt-1">차를 판매할 때</p>
+            <p className="text-base mt-1">판매할 때</p>
           </div>
           <img
             src="/img/car_hand1.png"
@@ -78,7 +78,7 @@ export default function MainCards({ onNavigate }) {
         >
           <div className="text-left mt-2 mb-2 pl-1 md:mt-5 md:mb-5 md:pl-3">
             <p className="text-2xl md:text-3xl font-bold leading-tight mb-1">양수</p>
-            <p className="text-base mt-1">차를 구매할 때</p>
+            <p className="text-base mt-1">구매할 때</p>
           </div>
           <img
             src="/img/car_hand2.png"
