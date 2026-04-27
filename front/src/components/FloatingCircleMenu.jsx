@@ -43,19 +43,22 @@ function IconMapPin({ className }) {
 }
 
 export default function FloatingCircleMenu({ onNavigateDirections }) {
+  const mobileCircleClass =
+    "h-[2.85rem] w-[2.85rem] md:h-[4.75rem] md:w-[4.75rem]";
+
   return (
     <div
-      className="pointer-events-auto fixed right-2 z-40 flex flex-col items-center gap-1.5 md:right-5 md:gap-4"
-      style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 0.5rem)" }}
+      className="pointer-events-auto fixed right-1.5 z-40 flex flex-col items-center gap-1.5 md:right-5 md:gap-4"
+      style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 0.35rem)" }}
       role="navigation"
       aria-label="빠른 연락"
     >
       <a
         href={TEL_HREF}
-        className="group flex h-[3.3rem] w-[3.3rem] flex-col items-center justify-center gap-0.5 rounded-full bg-[#0E2A7B] text-white shadow-[0_4px_12px_rgba(14,42,123,0.38)] transition hover:bg-[#0a1f5c] focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-[#0E2A7B] md:h-[4.75rem] md:w-[4.75rem]"
+        className={`group flex ${mobileCircleClass} flex-col items-center justify-center gap-0.5 rounded-full bg-[#0E2A7B] text-white shadow-[0_3px_9px_rgba(14,42,123,0.3)] transition hover:bg-[#0a1f5c] focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-[#0E2A7B]`}
         aria-label={`전화 ${PHONE_DISPLAY}`}
       >
-        <IconPhone className="h-4.5 w-4.5 shrink-0 md:h-7 md:w-7" />
+        <IconPhone className="h-4 w-4 shrink-0 md:h-7 md:w-7" />
         <span className="hidden px-1 text-center text-[0.55rem] font-bold leading-tight tabular-nums md:block md:text-[0.65rem]">
           {PHONE_DISPLAY}
         </span>
@@ -67,19 +70,19 @@ export default function FloatingCircleMenu({ onNavigateDirections }) {
           // eslint-disable-next-line no-alert
           alert("카카오 문의 연결은 준비 중입니다.");
         }}
-        className="flex h-[3.3rem] w-[3.3rem] items-center justify-center rounded-full border border-dashed border-white/40 bg-[#0E2A7B] text-white opacity-80 shadow-[0_4px_12px_rgba(14,42,123,0.38)] transition hover:bg-[#0a1f5c] focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-[#0E2A7B] md:h-[4.75rem] md:w-[4.75rem]"
+        className={`flex ${mobileCircleClass} items-center justify-center rounded-full border border-dashed border-white/40 bg-[#0E2A7B] text-white opacity-80 shadow-[0_3px_9px_rgba(14,42,123,0.3)] transition hover:bg-[#0a1f5c] focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-[#0E2A7B]`}
         aria-label="카카오 문의 (준비 중)"
       >
-        <IconChat className="h-4.5 w-4.5 md:h-9 md:w-9" />
+        <IconChat className="h-4 w-4 md:h-9 md:w-9" />
       </button>
 
       <button
         type="button"
         onClick={() => onNavigateDirections?.()}
-        className="flex h-[3.3rem] w-[3.3rem] flex-col items-center justify-center gap-0.5 rounded-full bg-[#0E2A7B] text-white shadow-[0_4px_12px_rgba(14,42,123,0.38)] transition hover:bg-[#0a1f5c] focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-[#0E2A7B] md:h-[4.75rem] md:w-[4.75rem]"
+        className={`flex ${mobileCircleClass} flex-col items-center justify-center gap-0.5 rounded-full bg-[#0E2A7B] text-white shadow-[0_3px_9px_rgba(14,42,123,0.3)] transition hover:bg-[#0a1f5c] focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-[#0E2A7B]`}
         aria-label="오시는 길 페이지로"
       >
-        <IconMapPin className="h-4.5 w-4.5 md:h-8 md:w-8" />
+        <IconMapPin className="h-4 w-4 md:h-8 md:w-8" />
         <span className="px-1 text-center text-[0.5rem] font-bold leading-tight md:text-[0.65rem]">
           오시는 길
         </span>

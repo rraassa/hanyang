@@ -26,6 +26,9 @@ const parseJwtPayload = (token) => {
 };
 
 const checkIsAdminUser = () => {
+  const loginType = localStorage.getItem("loginType");
+  if (loginType && loginType !== "cognito") return false;
+
   if (localStorage.getItem("isAdmin") === "true") return true;
 
   const payload = parseJwtPayload(localStorage.getItem("idToken"));

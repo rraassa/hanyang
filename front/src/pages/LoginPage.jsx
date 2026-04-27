@@ -28,8 +28,10 @@ export default function LoginPage() {
       const fallbackName = email.split("@")[0] || "User";
       localStorage.setItem("accessToken", tokens.accessToken);
       localStorage.setItem("idToken", tokens.idToken);
+      localStorage.removeItem("kakaoId");
       localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("displayName", localStorage.getItem("nickname") || fallbackName);
+      localStorage.setItem("loginType", "cognito");
       
       // 관리자 권한 체크
       try {

@@ -121,6 +121,11 @@ export default function Header({ colorType, onNavigate }) {
                       localStorage.removeItem("displayName");
                       localStorage.removeItem("nickname");
                       localStorage.removeItem("isAdmin");
+                      localStorage.removeItem("idToken");
+                      localStorage.removeItem("accessToken");
+                      localStorage.removeItem("refreshToken");
+                      localStorage.removeItem("kakaoId");
+                      localStorage.removeItem("loginType");
                       window.dispatchEvent(new Event("auth:changed"));
                       navigate("/");
                     }}

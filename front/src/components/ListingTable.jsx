@@ -27,6 +27,9 @@ const parseJwtPayload = (token) => {
 };
 
 const checkIsAdminUser = () => {
+  const loginType = localStorage.getItem("loginType");
+  if (loginType && loginType !== "cognito") return false;
+
   const payload = parseJwtPayload(localStorage.getItem("idToken"));
   const groups = payload?.["cognito:groups"];
   if (!Array.isArray(groups)) return false;

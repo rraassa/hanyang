@@ -20,6 +20,9 @@ export const getCurrentUserId = () => {
 };
 
 export const isAdminUser = () => {
+  const loginType = localStorage.getItem('loginType');
+  if (loginType && loginType !== 'cognito') return false;
+
   const idToken = localStorage.getItem('idToken');
   if (!idToken) return false;
 

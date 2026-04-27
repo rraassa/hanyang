@@ -6,6 +6,19 @@ export default function KakaoCallback() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const getDisplayNameFromKakao = (userInfo) => {
+      const candidates = [
+        userInfo?.properties?.nickname,
+        userInfo?.kakao_account?.profile?.nickname,
+        userInfo?.kakao_account?.name,
+      ];
+      const name = candidates.find((v) => typeof v === "string" && v.trim());
+      if (name) return name.trim();
+
+      const id = userInfo?.id != null ? String(userInfo.id) : "";
+      return id ? `사용자${id.slice(-4)}` : "사용자";
+    };
+
     const handleKakaoLogin = async () => {
       const code = new URLSearchParams(window.location.search).get('code');
       
@@ -18,11 +31,14 @@ export default function KakaoCallback() {
       try {
         const tokenData = await getKakaoToken(code);
         const userInfo = await getKakaoUserInfo(tokenData.access_token);
+        const displayName = getDisplayNameFromKakao(userInfo);
 
         localStorage.setItem('accessToken', tokenData.access_token);
+        localStorage.removeItem('idToken');
+        localStorage.removeItem('refreshToken');
         localStorage.setItem('kakaoId', userInfo.id);
         localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('displayName', userInfo.properties?.nickname || '카카오 사용자');
+        localStorage.setItem('displayName', displayName);
         localStorage.setItem('loginType', 'kakao');
         localStorage.setItem('isAdmin', 'false');
 
