@@ -37,27 +37,19 @@ const checkIsAdminUser = () => {
   return groups.some((groupName) => String(groupName).toLowerCase() === "admin");
 };
 
-const DEFAULT_LISTINGS = [
-  { id: 1, year: "2020년식", model: "소나타", mileage: "11만km", accident: "무사고", color: "회색", status: "구매가능" },
-  { id: 2, year: "2021년식", model: "K5", mileage: "9만km", accident: "무사고", color: "회색", status: "구매가능" },
-  { id: 3, year: "2019년식", model: "쏘렌토", mileage: "14만km", accident: "단순교환", color: "회색", status: "판매완료" },
-  { id: 4, year: "2022년식", model: "GV80", mileage: "6만km", accident: "무사고", color: "회색", status: "구매가능" },
-  { id: 5, year: "2018년식", model: "K9", mileage: "16만km", accident: "무사고", color: "회색", status: "판매완료" },
-  { id: 6, year: "2020년식", model: "QM6", mileage: "10만km", accident: "단순교환", color: "회색", status: "구매가능" },
-  { id: 7, year: "2021년식", model: "카니발", mileage: "8만km", accident: "무사고", color: "회색", status: "판매완료" },
-  { id: 8, year: "2022년식", model: "아이오닉5", mileage: "5만km", accident: "무사고", color: "회색", status: "구매가능" },
-  { id: 9, year: "2017년식", model: "모닝", mileage: "12만km", accident: "단순교환", color: "회색", status: "판매완료" },
-  { id: 10, year: "2019년식", model: "K3", mileage: "10만km", accident: "무사고", color: "회색", status: "구매가능" },
-  { id: 11, year: "2021년식", model: "GV70", mileage: "7만km", accident: "무사고", color: "회색", status: "판매완료" },
-  { id: 12, year: "2020년식", model: "투싼", mileage: "9만km", accident: "단순교환", color: "회색", status: "구매가능" },
-  { id: 13, year: "2018년식", model: "스타리아", mileage: "13만km", accident: "무사고", color: "회색", status: "판매완료" },
-  { id: 14, year: "2019년식", model: "레이", mileage: "11만km", accident: "무사고", color: "회색", status: "구매가능" },
-  { id: 15, year: "2020년식", model: "베뉴", mileage: "8만km", accident: "단순교환", color: "회색", status: "판매완료" },
+/** 로컬 UI 데모용만 켜세요: REACT_APP_SAMPLE_LISTINGS=true */
+const SAMPLE_FALLBACK_ENABLED =
+  process.env.REACT_APP_SAMPLE_LISTINGS === "true";
+
+const SAMPLE_LISTINGS = [
+  { id: "sample-1", year: "2020년식", model: "소나타", mileage: "11만km", accident: "무사고", color: "회색", status: "구매가능" },
+  { id: "sample-2", year: "2021년식", model: "K5", mileage: "9만km", accident: "무사고", color: "회색", status: "구매가능" },
 ];
 
 export default function ListingBox({ onNavigate }) {
   const navigate = useNavigate();
   const [listings, setListings] = useState([]);
+  const [listingsLoadError, setListingsLoadError] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
@@ -76,12 +68,18 @@ export default function ListingBox({ onNavigate }) {
 
   useEffect(() => {
     const loadListings = async () => {
+      setListingsLoadError("");
       try {
         const data = await getListings();
-        setListings(data.length > 0 ? data : DEFAULT_LISTINGS);
+        /** 서버가 빈 목록을 주면 빈 목록 표시 — 예전처럼 샘플 데이터로 채우지 않음 */
+        setListings(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("매물 목록 로드 실패:", error);
-        setListings(DEFAULT_LISTINGS);
+        const hint =
+          error?.message ||
+          "서버에서 매물을 불러오지 못했습니다.";
+        setListingsLoadError(hint);
+        setListings(SAMPLE_FALLBACK_ENABLED ? SAMPLE_LISTINGS : []);
       } finally {
         setLoading(false);
       }
@@ -171,7 +169,7 @@ export default function ListingBox({ onNavigate }) {
 
   return (
     <section className="mt-16 md:mt-20 w-full px-4 md:px-20 py-6 bg-[#fafaf5]">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <h2 className="text-xl font-bold text-[#0E2A7B]">매물 목록</h2>
         {canManageListings && (
           <button
@@ -184,6 +182,13 @@ export default function ListingBox({ onNavigate }) {
           </button>
         )}
       </div>
+
+      {listingsLoadError && (
+        <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950 md:text-sm">
+          {listingsLoadError} 네트워크 탭에서 <span className="font-mono">/listings</span> 요청 상태(404·500
+          등)와 <span className="font-mono">REACT_APP_LISTING_API_URL</span> 설정을 확인해 주세요.
+        </p>
+      )}
 
       {/* 매물 리스트 전체를 감싸는 흰색 박스 */}
       <div className="rounded-2xl bg-white shadow-[0_8px_30px_rgba(0,0,0,0.08)] p-2">
@@ -231,6 +236,11 @@ export default function ListingBox({ onNavigate }) {
         <div className="max-h-[450px] overflow-y-auto scrollbar-hide divide-y divide-gray-200">
           {loading && (
             <div className="px-4 py-8 text-center text-gray-500">매물을 불러오는 중...</div>
+          )}
+          {!loading && listings.length === 0 && (
+            <div className="px-4 py-10 text-center text-sm text-gray-500">
+              등록된 매물이 없습니다.
+            </div>
           )}
           {listings.map((item, idx) => {
             const isAvailable = item.status === "구매가능";

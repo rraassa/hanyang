@@ -6,11 +6,22 @@ const BASE_API_URL =
 const API_URL = BASE_API_URL.replace(/\/+$/, "");
 
 const requestJson = async (path, options = {}) => {
-  const response = await fetch(`${API_URL}${path}`, options);
+  const url = `${API_URL}${path}`;
+  const response = await fetch(url, options);
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    throw new Error(data?.error || "매물 요청에 실패했습니다.");
+    const msg =
+      data?.error ||
+      data?.message ||
+      (response.status === 404
+        ? `매물 API를 찾을 수 없습니다(404). 배포된 Lambda가 ${path} 를 처리하는지 확인하세요.`
+        : null) ||
+      `매물 요청 실패 (${response.status})`;
+    const err = new Error(msg);
+    err.status = response.status;
+    err.url = url;
+    throw err;
   }
   return data;
 };
