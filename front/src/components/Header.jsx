@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { clearStoredAuth } from "../lib/authSession";
 
 export default function Header({ colorType, onNavigate }) {
   const navigate = useNavigate();
@@ -126,16 +127,7 @@ export default function Header({ colorType, onNavigate }) {
                   <button
                     type="button"
                     onClick={() => {
-                      localStorage.removeItem("isLoggedIn");
-                      localStorage.removeItem("displayName");
-                      localStorage.removeItem("nickname");
-                      localStorage.removeItem("isAdmin");
-                      localStorage.removeItem("idToken");
-                      localStorage.removeItem("accessToken");
-                      localStorage.removeItem("refreshToken");
-                      localStorage.removeItem("kakaoId");
-                      localStorage.removeItem("loginType");
-                      window.dispatchEvent(new Event("auth:changed"));
+                      clearStoredAuth();
                       navigate("/");
                     }}
                     className="w-full px-3 py-2 text-xs font-semibold md:text-[15px] hover:bg-[#f0efe8]"

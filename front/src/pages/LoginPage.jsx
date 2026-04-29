@@ -6,6 +6,7 @@ import { Label } from '../components/ui/Label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
 import { signIn } from '../lib/cognito';
 import { kakaoLogin } from '../lib/kakao';
+import { establishSessionAnchors } from '../lib/authSession';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -32,7 +33,8 @@ export default function LoginPage() {
       localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("displayName", localStorage.getItem("nickname") || fallbackName);
       localStorage.setItem("loginType", "cognito");
-      
+      establishSessionAnchors();
+
       // 관리자 권한 체크
       try {
         const payload = JSON.parse(atob(tokens.idToken.split('.')[1]));

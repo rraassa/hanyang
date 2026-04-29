@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getKakaoToken, getKakaoUserInfo } from '../lib/kakao';
+import { establishSessionAnchors } from '../lib/authSession';
 
 export default function KakaoCallback() {
   const navigate = useNavigate();
@@ -41,6 +42,7 @@ export default function KakaoCallback() {
         localStorage.setItem('displayName', displayName);
         localStorage.setItem('loginType', 'kakao');
         localStorage.setItem('isAdmin', 'false');
+        establishSessionAnchors();
 
         window.dispatchEvent(new Event("auth:changed"));
         navigate('/');
