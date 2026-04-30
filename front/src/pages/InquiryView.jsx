@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function InquiryView() {
   const navigate = useNavigate();
-  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+  const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
 
   useEffect(() => {
     if (!isLoggedIn) {

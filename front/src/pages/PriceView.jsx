@@ -26,12 +26,12 @@ const parseJwtPayload = (token) => {
 };
 
 const checkIsAdminUser = () => {
-  const loginType = localStorage.getItem("loginType");
+  const loginType = sessionStorage.getItem("loginType");
   if (loginType && loginType !== "cognito") return false;
 
-  if (localStorage.getItem("isAdmin") === "true") return true;
+  if (sessionStorage.getItem("isAdmin") === "true") return true;
 
-  const payload = parseJwtPayload(localStorage.getItem("idToken"));
+  const payload = parseJwtPayload(sessionStorage.getItem("idToken"));
   const groups = payload?.["cognito:groups"];
   if (!Array.isArray(groups)) return false;
 
@@ -50,7 +50,7 @@ export default function PriceView() {
   const [isEditingPrice, setIsEditingPrice] = useState(false);
   const [loading, setLoading] = useState(true);
   const isAdmin = useMemo(() => checkIsAdminUser(), []);
-  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+  const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
 
   const requestPriceApi = async (method = "GET", body) => {
     const response = await fetch(API_URL, {
@@ -107,7 +107,7 @@ export default function PriceView() {
     try {
       const result = await requestPriceApi("POST", {
           price: nextPrice,
-          updatedBy: localStorage.getItem("displayName") || "admin"
+          updatedBy: sessionStorage.getItem("displayName") || "admin"
       });
       setPriceText(result.currentPrice || result?.data?.currentPrice || nextPrice);
       setIsEditingPrice(false);

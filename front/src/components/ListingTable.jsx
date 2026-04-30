@@ -27,10 +27,10 @@ const parseJwtPayload = (token) => {
 };
 
 const checkIsAdminUser = () => {
-  const loginType = localStorage.getItem("loginType");
+  const loginType = sessionStorage.getItem("loginType");
   if (loginType && loginType !== "cognito") return false;
 
-  const payload = parseJwtPayload(localStorage.getItem("idToken"));
+  const payload = parseJwtPayload(sessionStorage.getItem("idToken"));
   const groups = payload?.["cognito:groups"];
   if (!Array.isArray(groups)) return false;
 
@@ -63,7 +63,7 @@ export default function ListingBox({ onNavigate }) {
   const [activeAdminRowId, setActiveAdminRowId] = useState(null);
   const [activeUserRowId, setActiveUserRowId] = useState(null);
   const isAdmin = useMemo(() => checkIsAdminUser(), []);
-  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+  const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
   const canManageListings = isLoggedIn && isAdmin;
 
   useEffect(() => {

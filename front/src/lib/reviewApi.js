@@ -2,8 +2,8 @@ const API_URL = 'https://nlob2ghdyk.execute-api.ap-northeast-2.amazonaws.com';
 
 // 사용자 ID 가져오기
 export const getCurrentUserId = () => {
-  const idToken = localStorage.getItem('idToken');
-  const kakaoId = localStorage.getItem('kakaoId');
+  const idToken = sessionStorage.getItem('idToken');
+  const kakaoId = sessionStorage.getItem('kakaoId');
   
   if (kakaoId) return `kakao_${kakaoId}`;
   
@@ -20,10 +20,10 @@ export const getCurrentUserId = () => {
 };
 
 export const isAdminUser = () => {
-  const loginType = localStorage.getItem('loginType');
+  const loginType = sessionStorage.getItem('loginType');
   if (loginType && loginType !== 'cognito') return false;
 
-  const idToken = localStorage.getItem('idToken');
+  const idToken = sessionStorage.getItem('idToken');
   if (!idToken) return false;
 
   try {

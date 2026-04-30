@@ -255,7 +255,7 @@ function AppContent() {
   }, [location.pathname]);
 
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+    const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
     if (!isLoggedIn) return;
 
     hasAutoLoggedOutRef.current = false;

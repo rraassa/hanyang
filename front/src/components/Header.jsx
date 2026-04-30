@@ -18,8 +18,10 @@ export default function Header({ colorType, onNavigate }) {
 
   useEffect(() => {
     const syncAuthState = () => {
-      setIsLoggedIn(localStorage.getItem("isLoggedIn") === "true");
-      setDisplayName(localStorage.getItem("displayName") || localStorage.getItem("nickname") || "");
+      setIsLoggedIn(sessionStorage.getItem("isLoggedIn") === "true");
+      setDisplayName(
+        sessionStorage.getItem("displayName") || sessionStorage.getItem("nickname") || ""
+      );
     };
 
     syncAuthState();

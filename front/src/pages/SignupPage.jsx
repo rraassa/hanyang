@@ -21,7 +21,7 @@ export default function SignupPage() {
   const [signupRequested, setSignupRequested] = useState(false);
 
   useEffect(() => {
-    if (localStorage.getItem("isLoggedIn") === "true") {
+    if (sessionStorage.getItem("isLoggedIn") === "true") {
       navigate("/", { replace: true });
     }
   }, [navigate]);

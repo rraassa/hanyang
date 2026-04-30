@@ -1,6 +1,7 @@
 /**
  * 브라우저 탭이 백그라운드여도 또는 닫았다가 다시 열어도
  * 로그인 시점·마지막 활동 시각을 기준으로 실제 경과 시간으로 만료를 판별합니다.
+ * 인증 값은 sessionStorage에 있어 탭을 닫으면 함께 사라집니다.
  */
 
 export const SESSION_KEYS = {
@@ -13,27 +14,27 @@ export const getAbsSessionMaxMs = () =>
   Number(process.env.REACT_APP_SESSION_ABS_MAX_MS ?? 86400000) || 86400000;
 
 export const getIdleTimeoutMsForUser = () => {
-  const isAdmin = localStorage.getItem("isAdmin") === "true";
+  const isAdmin = sessionStorage.getItem("isAdmin") === "true";
   return isAdmin ? 1000 * 60 * 15 : 1000 * 60 * 30;
 };
 
 export function establishSessionAnchors() {
   const now = Date.now();
-  localStorage.setItem(SESSION_KEYS.LOGIN_AT, String(now));
-  localStorage.setItem(SESSION_KEYS.LAST_ACTIVITY_AT, String(now));
+  sessionStorage.setItem(SESSION_KEYS.LOGIN_AT, String(now));
+  sessionStorage.setItem(SESSION_KEYS.LAST_ACTIVITY_AT, String(now));
 }
 
 /**
  * 로그인 직후 session 키가 없는 기존 세션 호환용(한 번만 채움).
  */
 export function ensureSessionAnchorsIfLoggedIn() {
-  if (localStorage.getItem("isLoggedIn") !== "true") return;
+  if (sessionStorage.getItem("isLoggedIn") !== "true") return;
   const now = Date.now();
-  if (!localStorage.getItem(SESSION_KEYS.LOGIN_AT)) {
-    localStorage.setItem(SESSION_KEYS.LOGIN_AT, String(now));
+  if (!sessionStorage.getItem(SESSION_KEYS.LOGIN_AT)) {
+    sessionStorage.setItem(SESSION_KEYS.LOGIN_AT, String(now));
   }
-  if (!localStorage.getItem(SESSION_KEYS.LAST_ACTIVITY_AT)) {
-    localStorage.setItem(SESSION_KEYS.LAST_ACTIVITY_AT, String(now));
+  if (!sessionStorage.getItem(SESSION_KEYS.LAST_ACTIVITY_AT)) {
+    sessionStorage.setItem(SESSION_KEYS.LAST_ACTIVITY_AT, String(now));
   }
 }
 
@@ -41,17 +42,17 @@ const ACTIVITY_EVENTS = ["mousemove", "keydown", "click", "scroll", "touchstart"
 
 /** 수동 로그아웃 시에도 호출해 세션 타임스탬프를 함께 제거합니다. */
 export function clearStoredAuth() {
-  localStorage.removeItem("isLoggedIn");
-  localStorage.removeItem("displayName");
-  localStorage.removeItem("nickname");
-  localStorage.removeItem("isAdmin");
-  localStorage.removeItem("idToken");
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("refreshToken");
-  localStorage.removeItem("kakaoId");
-  localStorage.removeItem("loginType");
-  localStorage.removeItem(SESSION_KEYS.LOGIN_AT);
-  localStorage.removeItem(SESSION_KEYS.LAST_ACTIVITY_AT);
+  sessionStorage.removeItem("isLoggedIn");
+  sessionStorage.removeItem("displayName");
+  sessionStorage.removeItem("nickname");
+  sessionStorage.removeItem("isAdmin");
+  sessionStorage.removeItem("idToken");
+  sessionStorage.removeItem("accessToken");
+  sessionStorage.removeItem("refreshToken");
+  sessionStorage.removeItem("kakaoId");
+  sessionStorage.removeItem("loginType");
+  sessionStorage.removeItem(SESSION_KEYS.LOGIN_AT);
+  sessionStorage.removeItem(SESSION_KEYS.LAST_ACTIVITY_AT);
   window.dispatchEvent(new Event("auth:changed"));
 }
 
@@ -60,14 +61,14 @@ export function clearStoredAuth() {
  * lastActivityMillis: 메모리에 유지되는 최근 활동 시각과 storage를 함께 고려하기 위해 받음.
  */
 export function evaluateSessionExpiry(lastActivityMillis) {
-  if (localStorage.getItem("isLoggedIn") !== "true") {
+  if (sessionStorage.getItem("isLoggedIn") !== "true") {
     return { expired: false, reason: null };
   }
 
   const idleMs = getIdleTimeoutMsForUser();
   const absMs = getAbsSessionMaxMs();
-  const loginAtRaw = Number(localStorage.getItem(SESSION_KEYS.LOGIN_AT));
-  const storedLastRaw = Number(localStorage.getItem(SESSION_KEYS.LAST_ACTIVITY_AT));
+  const loginAtRaw = Number(sessionStorage.getItem(SESSION_KEYS.LOGIN_AT));
+  const storedLastRaw = Number(sessionStorage.getItem(SESSION_KEYS.LAST_ACTIVITY_AT));
   const loginAt = Number.isFinite(loginAtRaw) ? loginAtRaw : Date.now();
   const storedLast = Number.isFinite(storedLastRaw) ? storedLastRaw : lastActivityMillis;
   const effectiveLastActivity = Math.max(storedLast, lastActivityMillis);
@@ -109,7 +110,7 @@ export function maybePersistLastActivity(lastActivityMillis, lastPersistAtRef) {
   const now = Date.now();
   if (now - lastPersistAtRef.current < 8000) return;
   lastPersistAtRef.current = now;
-  localStorage.setItem(SESSION_KEYS.LAST_ACTIVITY_AT, String(lastActivityMillis));
+  sessionStorage.setItem(SESSION_KEYS.LAST_ACTIVITY_AT, String(lastActivityMillis));
 }
 
 /**
@@ -119,7 +120,7 @@ export function attachSessionExpiryGuards(navigate, didLogoutRef) {
   ensureSessionAnchorsIfLoggedIn();
 
   let lastActivityMillis =
-    Number(localStorage.getItem(SESSION_KEYS.LAST_ACTIVITY_AT)) || Date.now();
+    Number(sessionStorage.getItem(SESSION_KEYS.LAST_ACTIVITY_AT)) || Date.now();
   const lastPersistAtRef = { current: Date.now() };
 
   const maybeLogout = () => {
@@ -127,7 +128,7 @@ export function attachSessionExpiryGuards(navigate, didLogoutRef) {
   };
 
   const onActivity = () => {
-    if (localStorage.getItem("isLoggedIn") !== "true") return;
+    if (sessionStorage.getItem("isLoggedIn") !== "true") return;
     lastActivityMillis = Date.now();
     maybePersistLastActivity(lastActivityMillis, lastPersistAtRef);
   };
@@ -136,7 +137,7 @@ export function attachSessionExpiryGuards(navigate, didLogoutRef) {
     if (document.visibilityState === "visible") {
       lastActivityMillis = Math.max(
         lastActivityMillis,
-        Number(localStorage.getItem(SESSION_KEYS.LAST_ACTIVITY_AT)) || 0
+        Number(sessionStorage.getItem(SESSION_KEYS.LAST_ACTIVITY_AT)) || 0
       );
       maybeLogout();
     }

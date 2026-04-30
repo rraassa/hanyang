@@ -35,7 +35,7 @@ export default function ReviewView() {
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 12;
 
-  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+  const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
   const currentUserId = getCurrentUserId();
   const adminUser = isAdminUser();
 

@@ -34,14 +34,14 @@ export default function KakaoCallback() {
         const userInfo = await getKakaoUserInfo(tokenData.access_token);
         const displayName = getDisplayNameFromKakao(userInfo);
 
-        localStorage.setItem('accessToken', tokenData.access_token);
-        localStorage.removeItem('idToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.setItem('kakaoId', userInfo.id);
-        localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('displayName', displayName);
-        localStorage.setItem('loginType', 'kakao');
-        localStorage.setItem('isAdmin', 'false');
+        sessionStorage.setItem('accessToken', tokenData.access_token);
+        sessionStorage.removeItem('idToken');
+        sessionStorage.removeItem('refreshToken');
+        sessionStorage.setItem('kakaoId', userInfo.id);
+        sessionStorage.setItem('isLoggedIn', 'true');
+        sessionStorage.setItem('displayName', displayName);
+        sessionStorage.setItem('loginType', 'kakao');
+        sessionStorage.setItem('isAdmin', 'false');
         establishSessionAnchors();
 
         window.dispatchEvent(new Event("auth:changed"));

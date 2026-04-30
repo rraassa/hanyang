@@ -15,7 +15,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (localStorage.getItem("isLoggedIn") === "true") {
+    if (sessionStorage.getItem("isLoggedIn") === "true") {
       navigate("/", { replace: true });
     }
   }, [navigate]);
@@ -27,12 +27,12 @@ export default function LoginPage() {
     try {
       const tokens = await signIn(email, password);
       const fallbackName = email.split("@")[0] || "User";
-      localStorage.setItem("accessToken", tokens.accessToken);
-      localStorage.setItem("idToken", tokens.idToken);
-      localStorage.removeItem("kakaoId");
-      localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("displayName", localStorage.getItem("nickname") || fallbackName);
-      localStorage.setItem("loginType", "cognito");
+      sessionStorage.setItem("accessToken", tokens.accessToken);
+      sessionStorage.setItem("idToken", tokens.idToken);
+      sessionStorage.removeItem("kakaoId");
+      sessionStorage.setItem("isLoggedIn", "true");
+      sessionStorage.setItem("displayName", sessionStorage.getItem("nickname") || fallbackName);
+      sessionStorage.setItem("loginType", "cognito");
       establishSessionAnchors();
 
       // 관리자 권한 체크
@@ -40,9 +40,9 @@ export default function LoginPage() {
         const payload = JSON.parse(atob(tokens.idToken.split('.')[1]));
         const groups = payload?.["cognito:groups"] || [];
         const isAdmin = groups.some(g => String(g).toLowerCase().includes("admin"));
-        localStorage.setItem("isAdmin", isAdmin ? "true" : "false");
+        sessionStorage.setItem("isAdmin", isAdmin ? "true" : "false");
       } catch (e) {
-        localStorage.setItem("isAdmin", "false");
+        sessionStorage.setItem("isAdmin", "false");
       }
       
       window.dispatchEvent(new Event("auth:changed"));
