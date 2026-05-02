@@ -1,8 +1,8 @@
 /**
  * 사이트 전역 우측 고정: 전화 / 카카오 문의(추가 예정) / 오시는 길(사내 페이지)
  */
-const PHONE_DISPLAY = "878-3336";
-const TEL_HREF = "tel:02-878-3336";
+const PHONE_LABEL = "전화하기";
+const TEL_HREF = "tel:01037368082";
 
 function IconPhone({ className }) {
   return (
@@ -56,11 +56,11 @@ export default function FloatingCircleMenu({ onNavigateDirections }) {
       <a
         href={TEL_HREF}
         className={`group flex ${mobileCircleClass} flex-col items-center justify-center gap-0.5 rounded-full bg-[#0E2A7B] text-white shadow-[0_3px_9px_rgba(14,42,123,0.3)] transition hover:bg-[#0a1f5c] focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-[#0E2A7B]`}
-        aria-label={`전화 ${PHONE_DISPLAY}`}
+        aria-label={PHONE_LABEL}
       >
         <IconPhone className="h-4 w-4 shrink-0 md:h-7 md:w-7" />
-        <span className="hidden px-1 text-center text-[0.55rem] font-bold leading-tight tabular-nums md:block md:text-[0.65rem]">
-          {PHONE_DISPLAY}
+        <span className="px-0.5 text-center text-[0.45rem] font-bold leading-tight md:px-1 md:text-[0.65rem]">
+          {PHONE_LABEL}
         </span>
       </a>
 

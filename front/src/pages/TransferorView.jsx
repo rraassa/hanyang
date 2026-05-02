@@ -6,7 +6,7 @@ const TAB_DOCUMENTS = "documents";
 const procedureItems = [
   {
     title: "직거래 방식",
-    description: "양수자와 양도자 원하는 금액 따라 후 계약금 정도금 받고 나머지 받는 방식",
+    description: "양수자와 양도자 원하는 금액 따라 후 계약금 중도금 받고 나머지 받는 방식",
   },
   {
     title: "일시불 방식",
@@ -141,6 +141,14 @@ export default function TransferorView() {
                   ))}
                 </ol>
 
+                <div className="mt-10 flex justify-center md:mt-12">
+                  <a
+                    href="tel:01037368082"
+                    className="inline-flex items-center justify-center rounded-full bg-[#0E2A7B] px-8 py-3 text-base font-bold text-white shadow-[0_6px_16px_rgba(14,42,123,0.35)] transition hover:bg-[#0a1f5c] md:text-lg"
+                  >
+                    전화하기
+                  </a>
+                </div>
               </div>
             ) : (
               <ol className="mt-7 list-decimal space-y-3 pl-8 text-base font-bold leading-snug text-black md:mt-10 md:space-y-4 md:pl-10 md:text-[20px]">
