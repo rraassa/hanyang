@@ -101,9 +101,9 @@ export default function LoginPage() {
                     <input type="checkbox" className="mr-2" />
                     아이디 비밀번호 기억
                   </label>
-                  <a href="#" className="text-primary hover:underline">
+                  <Link to="/forgot-password" className="text-primary hover:underline">
                     비밀번호 찾기
-                  </a>
+                  </Link>
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? '로그인 중...' : '로그인'}

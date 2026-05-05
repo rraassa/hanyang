@@ -68,6 +68,26 @@ export const signIn = (email, password) => {
   });
 };
 
+export const forgotPassword = (email) => {
+  return new Promise((resolve, reject) => {
+    const cognitoUser = new CognitoUser({ Username: email, Pool: userPool });
+    cognitoUser.forgotPassword({
+      onSuccess: resolve,
+      onFailure: reject,
+    });
+  });
+};
+
+export const confirmForgotPassword = (email, code, newPassword) => {
+  return new Promise((resolve, reject) => {
+    const cognitoUser = new CognitoUser({ Username: email, Pool: userPool });
+    cognitoUser.confirmPassword(code, newPassword, {
+      onSuccess: resolve,
+      onFailure: reject,
+    });
+  });
+};
+
 export const signOut = () => {
   const cognitoUser = userPool.getCurrentUser();
   if (cognitoUser) {

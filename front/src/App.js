@@ -16,6 +16,7 @@ import InquirySection from "./components/InquirySection";
 import Footer from "./components/Footer";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import KakaoCallback from "./pages/KakaoCallback";
 import TransferorView from "./pages/TransferorView";
 import AcceptorView from "./pages/AcceptorView";
@@ -38,7 +39,7 @@ const VIEW_MODES = new Set([
 function AppContent() {
   const location = useLocation();
   const navigate = useNavigate();
-  const isAuthPage = ["/login", "/signup"].includes(location.pathname);
+  const isAuthPage = ["/login", "/signup", "/forgot-password"].includes(location.pathname);
   const hasAutoLoggedOutRef = useRef(false);
 
   const [headerState, setHeaderState] = useState("default");
@@ -365,6 +366,7 @@ function AppContent() {
           />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/auth/kakao/callback" element={<KakaoCallback />} />
         </Routes>
       </main>
