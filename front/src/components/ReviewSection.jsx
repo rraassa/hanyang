@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { getAllReviews } from "../lib/reviewApi";
 import { resolveReviewImageUrl, logReviewImageError } from "../lib/reviewImageUrl";
+import { getReviewContentField } from "../lib/reviewText";
 
 const getReviewImageSource = resolveReviewImageUrl;
 
@@ -110,10 +111,12 @@ export default function SlidingReviewSection({ onViewAll }) {
                     {review.city || "서울"} | 후기
                   </div>
 
-                  <p className="text-sm text-black font-semibold mb-1">{review.title}</p>
-                  <p className="text-sm text-gray-700 line-clamp-1">
-                    {review.content || "거래 후기가 등록되었습니다."}
-                  </p>
+                  <p className="mb-1 text-sm font-semibold text-black line-clamp-2">{review.title}</p>
+                  {getReviewContentField(review) && (
+                    <p className="text-xs leading-relaxed text-gray-700 line-clamp-2 break-words md:text-sm">
+                      {getReviewContentField(review)}
+                    </p>
+                  )}
                 </div>
               </div>
             ))}

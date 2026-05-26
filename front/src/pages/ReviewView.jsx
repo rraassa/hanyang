@@ -14,6 +14,7 @@ import {
   withResolvedReviewImage,
   logReviewImageError,
 } from "../lib/reviewImageUrl";
+import { getReviewContentField } from "../lib/reviewText";
 
 const getReviewImageSource = resolveReviewImageUrl;
 const normalizeReviewImage = withResolvedReviewImage;
@@ -472,7 +473,12 @@ export default function ReviewView() {
                 <span className="inline-block rounded bg-[#0E2A7B] px-2 py-0.5 text-[11px] font-semibold text-white">
                   {review.city} | {review.type}
                 </span>
-                <p className="mt-1 text-sm font-semibold text-black">{review.title}</p>
+                <p className="mt-1 text-sm font-semibold text-black line-clamp-2">{review.title}</p>
+                {getReviewContentField(review) && (
+                  <p className="mt-1.5 text-xs leading-relaxed text-gray-600 line-clamp-2 break-words md:text-sm">
+                    {getReviewContentField(review)}
+                  </p>
+                )}
               </div>
             </article>
           ))}
