@@ -309,7 +309,7 @@ function AppContent() {
                         isAnimating ? 'h-72' : 'h-16'
                       }`}></div>
                       {/* Content section with two-stage animation */}
-                      <div className="bg-[#fafaf5] w-full rounded-tr-[5rem] flex-1 flex flex-col relative overflow-hidden">
+                      <div className="bg-[#fafaf5] w-full rounded-tr-[5rem] flex-1 flex flex-col relative overflow-visible">
                         <div
                           className={`flex min-h-0 w-full flex-1 flex-col transition-all duration-700 ease-out relative z-10 ${
                             isReturning
@@ -341,32 +341,35 @@ function AppContent() {
                                 {viewMode === "directions" && <DirectionsView />}
                               </div>
                             </div>
-                            <div
-                              className={`w-full shrink-0 ${
-                                pinFooterToViewport ? "mt-auto" : "overflow-hidden"
-                              }`}
-                              style={
-                                pinFooterToViewport
-                                  ? undefined
-                                  : {
-                                      marginTop: `${24 * footerRevealProgress}px`,
-                                      maxHeight:
-                                        footerRevealProgress >= 1
-                                          ? FOOTER_BLOCK_MIN_HEIGHT_PX
-                                          : FOOTER_BLOCK_MIN_HEIGHT_PX * footerRevealProgress,
-                                      opacity: footerRevealProgress,
-                                      transform: `translateY(${12 * (1 - footerRevealProgress)}px)`,
-                                      pointerEvents:
-                                        footerRevealProgress > 0.05 ? "auto" : "none",
-                                      transition:
-                                        "max-height 240ms ease-out, opacity 220ms ease-out, transform 280ms ease-out, margin-top 260ms ease-out",
-                                    }
-                              }
-                            >
-                              <Footer />
-                            </div>
+                            {!pinFooterToViewport && (
+                              <div
+                                className="w-full shrink-0"
+                                style={{
+                                  marginTop: `${16 * footerRevealProgress}px`,
+                                  maxHeight:
+                                    footerRevealProgress >= 1
+                                      ? FOOTER_BLOCK_MIN_HEIGHT_PX
+                                      : FOOTER_BLOCK_MIN_HEIGHT_PX * footerRevealProgress,
+                                  opacity: footerRevealProgress,
+                                  transform: `translateY(${8 * (1 - footerRevealProgress)}px)`,
+                                  pointerEvents:
+                                    footerRevealProgress > 0.05 ? "auto" : "none",
+                                  overflow:
+                                    footerRevealProgress >= 1 ? "visible" : "hidden",
+                                  transition:
+                                    "max-height 240ms ease-out, opacity 220ms ease-out, transform 280ms ease-out, margin-top 260ms ease-out",
+                                }}
+                              >
+                                <Footer />
+                              </div>
+                            )}
                           </div>
                         </div>
+                        {pinFooterToViewport && (
+                          <div className="relative z-20 mt-auto w-full shrink-0">
+                            <Footer />
+                          </div>
+                        )}
                       </div>
                     </div>
                   ) : (
