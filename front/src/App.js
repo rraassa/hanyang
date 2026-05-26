@@ -13,7 +13,7 @@ import MainCards from "./components/MainCards";
 import ReviewSection from "./components/ReviewSection";
 import ListingTable from "./components/ListingTable";
 import InquirySection from "./components/InquirySection";
-import Footer from "./components/Footer";
+import Footer, { FOOTER_BLOCK_MIN_HEIGHT_PX } from "./components/Footer";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
@@ -124,7 +124,11 @@ function AppContent() {
       const fullHeight = document.documentElement.scrollHeight;
       const distanceToBottom = Math.max(0, fullHeight - scrollBottom);
       const rawProgress = (revealDistance - distanceToBottom) / revealDistance;
-      const clampedProgress = Math.min(1, Math.max(0, rawProgress));
+      const scrollable = fullHeight > window.innerHeight + 16;
+      const clampedProgress =
+        !scrollable || distanceToBottom <= 8
+          ? 1
+          : Math.min(1, Math.max(0, rawProgress));
       setFooterRevealProgress(clampedProgress);
     };
 
@@ -327,13 +331,16 @@ function AppContent() {
                               </div>
                             </div>
                             <div
-                              className="overflow-hidden bg-[#fafaf5] shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.1)]"
+                              className="w-full overflow-hidden"
                               style={{
                                 marginTop: `${24 * footerRevealProgress}px`,
-                                maxHeight: `${104 * footerRevealProgress}px`,
+                                maxHeight:
+                                  footerRevealProgress >= 1
+                                    ? FOOTER_BLOCK_MIN_HEIGHT_PX
+                                    : FOOTER_BLOCK_MIN_HEIGHT_PX * footerRevealProgress,
                                 opacity: footerRevealProgress,
-                                transform: `translateY(${16 * (1 - footerRevealProgress)}px)`,
-                                pointerEvents: footerRevealProgress > 0 ? "auto" : "none",
+                                transform: `translateY(${12 * (1 - footerRevealProgress)}px)`,
+                                pointerEvents: footerRevealProgress > 0.05 ? "auto" : "none",
                                 transition:
                                   "max-height 240ms ease-out, opacity 220ms ease-out, transform 280ms ease-out, margin-top 260ms ease-out",
                               }}
@@ -372,7 +379,7 @@ function AppContent() {
       </main>
 
       {!isAuthPage && !viewMode && (
-        <div className="shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.1)] rounded-tr-[5rem]">
+        <div className="w-full">
           <Footer />
         </div>
       )}
