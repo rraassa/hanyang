@@ -36,6 +36,9 @@ const VIEW_MODES = new Set([
   "directions",
 ]);
 
+/** 콘텐츠가 짧아 스크롤 reveal 시 푸터가 잘리는 페이지 */
+const PINNED_FOOTER_VIEW_MODES = new Set(["inquiry", "price"]);
+
 function AppContent() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -117,6 +120,11 @@ function AppContent() {
   useEffect(() => {
     // 서브페이지(viewMode) 하단 근처에서 footer가 아래에서 위로 서서히 나타남
     if (!viewMode) return;
+
+    if (PINNED_FOOTER_VIEW_MODES.has(viewMode)) {
+      setFooterRevealProgress(1);
+      return;
+    }
 
     const revealDistance = 220;
     const updateFooterReveal = () => {
@@ -271,6 +279,9 @@ function AppContent() {
   const showFloatingMenu =
     !isAuthPage && !location.pathname.startsWith("/auth/");
 
+  const pinFooterToViewport =
+    viewMode != null && PINNED_FOOTER_VIEW_MODES.has(viewMode);
+
   return (
     <div className="bg-[#EBEAF3] min-h-screen font-sans text-gray-900">
       {!isAuthPage && <Header colorType={headerState} onNavigate={handleNavigate} />}
@@ -300,7 +311,7 @@ function AppContent() {
                       {/* Content section with two-stage animation */}
                       <div className="bg-[#fafaf5] w-full rounded-tr-[5rem] flex-1 flex flex-col relative overflow-hidden">
                         <div
-                          className={`w-full flex flex-col transition-all duration-700 ease-out relative z-10 ${
+                          className={`flex min-h-0 w-full flex-1 flex-col transition-all duration-700 ease-out relative z-10 ${
                             isReturning
                               ? "transform translate-y-full opacity-0"
                               : isAnimating
@@ -317,8 +328,8 @@ function AppContent() {
                             }
                           }}
                         >
-                          <div className="flex-1">
-                            <div className="px-4 pt-10">
+                          <div className="flex min-h-0 flex-1 flex-col">
+                            <div className="flex-1 px-4 pt-10">
                               <div className={`transition-opacity duration-250 ease-in-out ${
                                 isPageTransition ? 'opacity-0' : 'opacity-100'
                               }`}>
@@ -331,19 +342,26 @@ function AppContent() {
                               </div>
                             </div>
                             <div
-                              className="w-full overflow-hidden"
-                              style={{
-                                marginTop: `${24 * footerRevealProgress}px`,
-                                maxHeight:
-                                  footerRevealProgress >= 1
-                                    ? FOOTER_BLOCK_MIN_HEIGHT_PX
-                                    : FOOTER_BLOCK_MIN_HEIGHT_PX * footerRevealProgress,
-                                opacity: footerRevealProgress,
-                                transform: `translateY(${12 * (1 - footerRevealProgress)}px)`,
-                                pointerEvents: footerRevealProgress > 0.05 ? "auto" : "none",
-                                transition:
-                                  "max-height 240ms ease-out, opacity 220ms ease-out, transform 280ms ease-out, margin-top 260ms ease-out",
-                              }}
+                              className={`w-full shrink-0 ${
+                                pinFooterToViewport ? "mt-auto" : "overflow-hidden"
+                              }`}
+                              style={
+                                pinFooterToViewport
+                                  ? undefined
+                                  : {
+                                      marginTop: `${24 * footerRevealProgress}px`,
+                                      maxHeight:
+                                        footerRevealProgress >= 1
+                                          ? FOOTER_BLOCK_MIN_HEIGHT_PX
+                                          : FOOTER_BLOCK_MIN_HEIGHT_PX * footerRevealProgress,
+                                      opacity: footerRevealProgress,
+                                      transform: `translateY(${12 * (1 - footerRevealProgress)}px)`,
+                                      pointerEvents:
+                                        footerRevealProgress > 0.05 ? "auto" : "none",
+                                      transition:
+                                        "max-height 240ms ease-out, opacity 220ms ease-out, transform 280ms ease-out, margin-top 260ms ease-out",
+                                    }
+                              }
                             >
                               <Footer />
                             </div>
