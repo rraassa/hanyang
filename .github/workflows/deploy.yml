@@ -60,13 +60,13 @@ jobs:
             rm -f deploy.tar.gz
 
             echo "=== [3/5] 기존 컨테이너 중지 ==="
-            docker compose down || true
+            docker-compose down || true
 
             echo "=== [4/5] nginx 이미지 빌드 ==="
-            docker compose build --no-cache --progress=plain
+            docker-compose build --no-cache --progress=plain
 
             echo "=== [5/5] 컨테이너 시작 ==="
-            docker compose up -d
+            docker-compose up -d
             docker ps
 
             echo "=== 배포 완료 ==="
