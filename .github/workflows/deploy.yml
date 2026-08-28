@@ -56,8 +56,12 @@ jobs:
             cd ~/hanyang
 
             echo "=== [2/5] 번들 압축 해제 ==="
+            rm -rf front docker-compose.yml
             tar xzf deploy.tar.gz
             rm -f deploy.tar.gz
+            echo "--- 압축 해제 후 구조 확인 ---"
+            ls -la
+            ls -la front/
 
             echo "=== [3/5] 기존 컨테이너 중지 ==="
             docker-compose down || true
