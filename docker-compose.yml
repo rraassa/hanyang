@@ -1,12 +1,8 @@
-version: '3.8'
-
 services:
   frontend:
     build:
       context: ./front
-      dockerfile: Dockerfile
-      args:
-        REACT_APP_KAKAO_JAVASCRIPT_KEY: ${REACT_APP_KAKAO_JAVASCRIPT_KEY:-}
+      dockerfile: Dockerfile.static
     container_name: nambaone-frontend
     ports:
       - "127.0.0.1:3000:80"

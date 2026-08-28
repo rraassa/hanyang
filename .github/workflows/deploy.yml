@@ -9,7 +9,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: front/package-lock.json
+
+      - name: Build React app (GitHub runner)
+        working-directory: front
+        env:
+          REACT_APP_AWS_REGION: ap-northeast-2
+          REACT_APP_USER_POOL_ID: ap-northeast-2_3KZ5195Hb
+          REACT_APP_USER_POOL_CLIENT_ID: 1hvpamheshqu2mrsstb95oftto
+          REACT_APP_KAKAO_JAVASCRIPT_KEY: ${{ secrets.REACT_APP_KAKAO_JAVASCRIPT_KEY }}
+          GENERATE_SOURCEMAP: false
+          CI: true
+        run: |
+          npm ci
+          npm run build
+
       - name: Deploy to EC2
         env:
           PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
@@ -18,12 +38,23 @@ jobs:
         run: |
           echo "$PRIVATE_KEY" > private_key.pem
           chmod 600 private_key.pem
-          ssh -o StrictHostKeyChecking=no -i private_key.pem ${USER}@${HOST} << 'ENDSSH'
+
+          tar czf deploy.tar.gz front/build front/nginx.conf front/Dockerfile.static docker-compose.yml
+
+          scp -o StrictHostKeyChecking=no -i private_key.pem deploy.tar.gz ${USER}@${HOST}:~/hanyang/
+
+          ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -i private_key.pem ${USER}@${HOST} << 'ENDSSH'
+            set -e
             cd ~/hanyang
-            export REACT_APP_KAKAO_JAVASCRIPT_KEY='${{ secrets.REACT_APP_KAKAO_JAVASCRIPT_KEY }}'
-            git config pull.rebase false
-            git fetch origin
-            git reset --hard origin/main
-            docker-compose down
-            docker-compose up -d --build
+            echo "=== Extract deploy bundle ==="
+            tar xzf deploy.tar.gz
+            rm -f deploy.tar.gz
+            echo "=== Stop old container ==="
+            docker compose down || true
+            echo "=== Build nginx image (static only, ~10s) ==="
+            docker compose build --progress=plain
+            echo "=== Start container ==="
+            docker compose up -d
+            docker ps
+            echo "=== Deploy done ==="
           ENDSSH
