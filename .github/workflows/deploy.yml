@@ -65,6 +65,9 @@ jobs:
 
             echo "=== [3/5] 기존 컨테이너 중지 ==="
             docker-compose down || true
+            # 80번 포트 점유 프로세스 강제 종료 (시스템 nginx 등)
+            sudo systemctl stop nginx 2>/dev/null || true
+            sudo fuser -k 80/tcp 2>/dev/null || true
 
             echo "=== [4/5] nginx 이미지 빌드 ==="
             docker-compose build --no-cache --progress=plain
