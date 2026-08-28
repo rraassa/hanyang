@@ -1,8 +1,10 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getKakaoChannelChatUrl } from "../lib/kakaoChannel";
 
 export default function InquiryView() {
   const navigate = useNavigate();
+  const kakaoChatUrl = getKakaoChannelChatUrl();
   const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
 
   useEffect(() => {
@@ -25,6 +27,16 @@ export default function InquiryView() {
             <p className="mt-2 text-center text-2xl font-extrabold leading-tight text-black md:text-[32px]">
               친절히 답해드리겠습니다
             </p>
+          </div>
+          <div className="mt-10 flex justify-center md:mt-12">
+            <a
+              href={kakaoChatUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-[#FEE500] px-8 py-3.5 text-base font-bold text-[#191919] shadow-[0_4px_14px_rgba(0,0,0,0.12)] transition hover:bg-[#FDD835] md:text-lg"
+            >
+              카카오톡으로 문의하기
+            </a>
           </div>
         </div>
       </div>
