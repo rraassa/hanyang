@@ -4,6 +4,7 @@
 import { getKakaoChannelChatUrl } from "../lib/kakaoChannel";
 
 const PHONE_LABEL = "전화하기";
+const INQUIRY_LABEL = "문의하기";
 const TEL_HREF = "tel:01037368082";
 const KAKAO_CHAT_URL = getKakaoChannelChatUrl();
 
@@ -71,10 +72,13 @@ export default function FloatingCircleMenu({ onNavigateDirections }) {
         href={KAKAO_CHAT_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className={`flex ${mobileCircleClass} items-center justify-center rounded-full bg-[#0E2A7B] text-white shadow-[0_3px_9px_rgba(14,42,123,0.3)] transition hover:bg-[#0a1f5c] focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-[#0E2A7B]`}
-        aria-label="카카오톡으로 문의하기"
+        className={`flex ${mobileCircleClass} flex-col items-center justify-center gap-0.5 rounded-full bg-[#0E2A7B] text-white shadow-[0_3px_9px_rgba(14,42,123,0.3)] transition hover:bg-[#0a1f5c] focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-[#0E2A7B]`}
+        aria-label={INQUIRY_LABEL}
       >
-        <IconChat className="h-4 w-4 md:h-9 md:w-9" />
+        <IconChat className="h-4 w-4 shrink-0 md:h-7 md:w-7" />
+        <span className="px-0.5 text-center text-[0.45rem] font-bold leading-tight md:px-1 md:text-[0.65rem]">
+          {INQUIRY_LABEL}
+        </span>
       </a>
 
       <button
