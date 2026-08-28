@@ -8,7 +8,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -25,7 +25,7 @@ jobs:
           REACT_APP_USER_POOL_CLIENT_ID: 1hvpamheshqu2mrsstb95oftto
           REACT_APP_KAKAO_JAVASCRIPT_KEY: ${{ secrets.REACT_APP_KAKAO_JAVASCRIPT_KEY }}
           GENERATE_SOURCEMAP: false
-          CI: true
+          CI: false
         run: |
           npm ci
           npm run build
@@ -39,22 +39,35 @@ jobs:
           echo "$PRIVATE_KEY" > private_key.pem
           chmod 600 private_key.pem
 
+          # 배포 번들 압축
           tar czf deploy.tar.gz front/build front/nginx.conf front/Dockerfile.static docker-compose.yml
 
+          # EC2 디렉토리 자동 생성 (없으면 scp 실패하므로 ssh로 먼저 생성)
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 -i private_key.pem ${USER}@${HOST} "mkdir -p ~/hanyang"
+
+          # 번들 전송
           scp -o StrictHostKeyChecking=no -i private_key.pem deploy.tar.gz ${USER}@${HOST}:~/hanyang/
 
-          ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -i private_key.pem ${USER}@${HOST} << 'ENDSSH'
+          # EC2에서 배포 실행
+          ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -o ConnectTimeout=30 -i private_key.pem ${USER}@${HOST} << 'ENDSSH'
             set -e
+
+            echo "=== [1/5] 배포 디렉토리 이동 ==="
             cd ~/hanyang
-            echo "=== Extract deploy bundle ==="
+
+            echo "=== [2/5] 번들 압축 해제 ==="
             tar xzf deploy.tar.gz
             rm -f deploy.tar.gz
-            echo "=== Stop old container ==="
+
+            echo "=== [3/5] 기존 컨테이너 중지 ==="
             docker compose down || true
-            echo "=== Build nginx image (static only, ~10s) ==="
-            docker compose build --progress=plain
-            echo "=== Start container ==="
+
+            echo "=== [4/5] nginx 이미지 빌드 ==="
+            docker compose build --no-cache --progress=plain
+
+            echo "=== [5/5] 컨테이너 시작 ==="
             docker compose up -d
             docker ps
-            echo "=== Deploy done ==="
+
+            echo "=== 배포 완료 ==="
           ENDSSH

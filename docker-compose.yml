@@ -5,9 +5,7 @@ services:
       dockerfile: Dockerfile.static
     container_name: nambaone-frontend
     ports:
-      - "127.0.0.1:3000:80"
-    environment:
-      - NODE_ENV=production
+      - "80:80"
     restart: unless-stopped
     networks:
       - nambaone-network
